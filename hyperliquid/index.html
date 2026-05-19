@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hyperliquid - 横纵分析法深度研究报告</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-solid: #ffffff;
+      --line: rgba(26, 82, 118, 0.15);
+      --line-strong: #2e86c1;
+      --title: #1a5276;
+      --subtitle: #1e8449;
+      --text: #2c3e50;
+      --muted: #627487;
+      --accent: #d8ebf8;
+      --quote-bg: #eef3f7;
+      --shadow: 0 24px 60px rgba(33, 68, 101, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Styrene B", "StyreneB", Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(46, 134, 193, 0.12), transparent 28%),
+        radial-gradient(circle at 85% 10%, rgba(30, 132, 73, 0.10), transparent 22%),
+        linear-gradient(180deg, #f8fbff 0%, #eef4fa 45%, #f4f7fb 100%);
+      line-height: 1.8;
+    }
+
+    a {
+      color: var(--title);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .layout {
+      width: min(1280px, calc(100vw - 32px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 28px;
+      padding: 28px 0 64px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      align-self: start;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 24px 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .sidebar h2 {
+      margin: 0 0 12px;
+      font-family: Copernicus, "Tiempos Headline", "Cormorant Garamond", "EB Garamond", Georgia, serif;
+      font-size: 24px;
+      color: var(--title);
+      letter-spacing: 0.02em;
+    }
+
+    .sidebar p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .toc {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .toc a {
+      display: block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      transition: 0.2s ease;
+    }
+
+    .toc a:hover {
+      background: #eef5fb;
+      color: var(--title);
+      text-decoration: none;
+      transform: translateX(2px);
+    }
+
+    .content {
+      min-width: 0;
+    }
+
+    .cover,
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .cover {
+      padding: 56px 54px 42px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .cover::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(26, 82, 118, 0.10), transparent 38%),
+        linear-gradient(300deg, rgba(30, 132, 73, 0.08), transparent 32%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(26, 82, 118, 0.08);
+      color: var(--title);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, h4 {
+      font-family: Copernicus, "Tiempos Headline", "Cormorant Garamond", "EB Garamond", Georgia, serif;
+      margin: 0;
+      letter-spacing: 0.01em;
+    }
+
+    h1 {
+      position: relative;
+      z-index: 1;
+      margin-top: 18px;
+      font-size: clamp(38px, 5vw, 56px);
+      color: var(--title);
+      line-height: 1.08;
+    }
+
+    .subtitle {
+      position: relative;
+      z-index: 1;
+      margin: 14px 0 10px;
+      color: var(--subtitle);
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .meta,
+    .cover-note {
+      position: relative;
+      z-index: 1;
+      color: var(--muted);
+      font-size: 15px;
+      margin: 10px 0 0;
+    }
+
+    .cover-line {
+      position: relative;
+      z-index: 1;
+      width: 160px;
+      height: 3px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--title), var(--subtitle));
+      margin: 28px 0 0;
+    }
+
+    section {
+      padding: 38px 42px;
+      margin-bottom: 24px;
+    }
+
+    h2 {
+      color: var(--title);
+      font-size: 32px;
+      margin-bottom: 18px;
+    }
+
+    h3 {
+      color: var(--title);
+      font-size: 24px;
+      margin: 30px 0 12px;
+    }
+
+    h4 {
+      color: var(--subtitle);
+      font-size: 20px;
+      margin: 22px 0 10px;
+    }
+
+    p {
+      margin: 0 0 14px;
+      font-size: 16px;
+      text-align: justify;
+    }
+
+    .lead {
+      font-size: 19px;
+      line-height: 1.9;
+    }
+
+    .summary-grid,
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 22px;
+    }
+
+    .metric-card {
+      background: var(--panel-solid);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+    }
+
+    .metric-card .label {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .metric-card .value {
+      font-size: 28px;
+      color: var(--title);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 6px;
+    }
+
+    .metric-card .desc {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 0;
+      text-align: left;
+    }
+
+    .quote {
+      margin: 22px 0;
+      padding: 18px 20px;
+      border-left: 3px solid var(--title);
+      background: var(--quote-bg);
+      border-radius: 0 16px 16px 0;
+      color: var(--text);
+    }
+
+    .quote strong {
+      color: var(--title);
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 18px 0 4px;
+    }
+
+    .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(30, 132, 73, 0.08);
+      color: var(--subtitle);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .timeline {
+      position: relative;
+      margin-top: 26px;
+      padding: 8px 0 8px 8px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 18px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(46, 134, 193, 0.1), rgba(46, 134, 193, 0.85), rgba(46, 134, 193, 0.18));
+    }
+
+    .timeline-node {
+      position: relative;
+      margin: 0 0 20px 0;
+      padding-left: 42px;
+      cursor: pointer;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: 9px;
+      top: 8px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid var(--line-strong);
+      box-shadow: 0 0 0 8px rgba(46, 134, 193, 0.10);
+    }
+
+    .timeline-content {
+      background: var(--panel-solid);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px 20px;
+      transition: 0.22s ease;
+    }
+
+    .timeline-node:hover .timeline-content {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 34px rgba(26, 82, 118, 0.10);
+    }
+
+    .timeline-date {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--subtitle);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .timeline-summary {
+      margin-bottom: 0;
+      color: var(--muted);
+    }
+
+    .timeline-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, margin-top 0.25s ease;
+      margin-top: 0;
+    }
+
+    .timeline-node.expanded .timeline-detail {
+      max-height: 280px;
+      margin-top: 12px;
+    }
+
+    .timeline-node.expanded .timeline-content {
+      border-color: rgba(46, 134, 193, 0.35);
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-solid);
+      margin-top: 18px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 860px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 16px 18px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid rgba(26, 82, 118, 0.10);
+      font-size: 15px;
+    }
+
+    th {
+      background: var(--title);
+      color: #ffffff;
+      font-weight: 700;
+      position: sticky;
+      top: 0;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8fbff;
+    }
+
+    tbody tr:hover {
+      background: #eef5fb;
+    }
+
+    ul {
+      margin: 10px 0 18px 18px;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .scenario {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel-solid);
+    }
+
+    .scenario h4 {
+      margin-top: 0;
+    }
+
+    .sources-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .source-item {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel-solid);
+    }
+
+    .source-item p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: left;
+    }
+
+    .footnote {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        top: 0;
+      }
+
+      .summary-grid,
+      .metrics-grid,
+      .scenario-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .layout {
+        width: min(100vw - 16px, 100%);
+        padding: 10px 0 36px;
+      }
+
+      .cover,
+      section {
+        padding: 24px 18px;
+        border-radius: 20px;
+      }
+
+      h2 {
+        font-size: 28px;
+      }
+
+      h3 {
+        font-size: 22px;
+      }
+
+      p {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <h2>Hyperliquid</h2>
+      <p>纵轴看它怎么从链上永续黑马长成交易基础设施，横轴看它为什么能把 dYdX、GMX、Jupiter Perps 甩到不同生态位。</p>
+      <nav class="toc">
+        <a href="#definition">一句话定义</a>
+        <a href="#longitudinal">纵向分析</a>
+        <a href="#timeline">关键时间轴</a>
+        <a href="#cross-sectional">横向分析</a>
+        <a href="#comparison-table">核心对比汇总</a>
+        <a href="#token">HYPE 代币拆解</a>
+        <a href="#insights">横纵交汇洞察</a>
+        <a href="#sources">信息来源</a>
+      </nav>
+    </aside>
+
+    <div class="content">
+      <header class="cover">
+        <div class="eyebrow">Horizontal-Vertical Analysis</div>
+        <h1>Hyperliquid 与 HYPE</h1>
+        <p class="subtitle">一条把永续合约、专用 L1、EVM 与代币回收飞轮焊在一起的交易链</p>
+        <p class="meta">研究时间：2026 年 5 月 19 日 | 研究对象类型：产品 + 协议 + 代币一体化系统 | 领域：加密交易 / 链上衍生品 / L1 基础设施</p>
+        <p class="cover-note">时间敏感数据说明：价格、市值、流通量、收入与市场份额均会变化。文中凡涉及“当前”指标，默认指向 2026 年 5 月 19 日前后抓取到的数据。</p>
+        <div class="cover-line"></div>
+      </header>
+
+      <section id="definition">
+        <h2>一句话定义</h2>
+        <p class="lead">Hyperliquid 不是“又一个发币的 DEX”。它更像一台垂直一体化交易机器：底层自己做链，中间自己做共识和订单簿，上层自己做永续、现货、EVM 和开发者接口；HYPE 则不是装饰品，而是这台机器的燃料、质押凭证、治理锚点和价值回收容器。</p>
+        <div class="quote">
+          <strong>核心判断：</strong>Hyperliquid 最大价值，不在“去中心化交易所”五个字，而在它把传统交易所最关键的三件事重新统一了：撮合效率、流动性组织、手续费归属。前两件决定它能不能打，后一件决定 HYPE 能不能站住。
+        </div>
+        <div class="summary-grid">
+          <div class="metric-card">
+            <div class="label">产品本质</div>
+            <div class="value">交易链</div>
+            <p class="desc">不是先有通用链再补交易应用，而是先围绕高频永续交易做性能，再反向长出通用执行层 HyperEVM。</p>
+          </div>
+          <div class="metric-card">
+            <div class="label">HYPE 本质</div>
+            <div class="value">系统权益币</div>
+            <p class="desc">兼具 HyperEVM gas、HyperBFT 质押、治理与手续费价值回收锚点，职责比多数“治理币”更实。</p>
+          </div>
+          <div class="metric-card">
+            <div class="label">增长引擎</div>
+            <div class="value">流动性飞轮</div>
+            <p class="desc">更好交易体验带来更多量，更多量带来更多手续费，更多手续费被系统性换成 HYPE，再反过来强化持币叙事。</p>
+          </div>
+          <div class="metric-card">
+            <div class="label">最大争议</div>
+            <div class="value">去中心化成色</div>
+            <p class="desc">JELLY 事件、早期验证者集中、风险处置中带有人治色彩，这些都提醒市场：高性能和完全中立常常不在同一边。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="longitudinal">
+        <h2>纵向分析</h2>
+        <h3>一、起源：它从来不是“链上券商理想”，而是“把 CEX 体验搬上链”</h3>
+        <p>要理解 Hyperliquid，先别从“链”开始，要从“交易员”开始。公开资料普遍把项目核心指向 Jeff Yan 及其低曝光团队，背景与量化交易、高频市场结构、做市逻辑高度相关。也就是说，这群人不是从“我要做一个通用世界计算机”出发，而是从更窄也更致命的问题出发：为什么链上永续交易，长期都像降级版中心化交易所？</p>
+        <p>这个问题背后其实有三层结构。第一层是性能，传统 EVM 体系上做订单簿，总会被吞吐、确认时间、链上成本卡住；第二层是流动性，链上原生流动性分散、做市体验差、专业交易者不愿意搬；第三层是价值分配，多数协议嘴上说社区，手续费真正的大头却常常被团队、投资人、做市安排或者隐形税吃掉。Hyperliquid 想切的，恰好就是这三刀。</p>
+        <p>所以它的早期设计方向特别清晰：不走“在别人的链上做交易前端”，而是自己做一条服务高频金融状态机的链；不走“先广泛兼容、后慢慢优化”，而是优先保证订单簿、撮合、清算、延迟这些交易命门；不走“先融资、后发币、再激励交易量”，而是长时间隐身打磨产品，用实际交易体验换口碑，再把代币放到体系成熟之后。</p>
+        <p>这套起点，决定了 Hyperliquid 后来几乎所有看上去“有点反常识”的决策。它不是一条先天中立、后天加交易插件的公链；它从第一天就是一台为交易而生的金融机器。后面的 HyperBFT、HyperCore、HyperEVM、HYPE，都只是这条主线的外延。</p>
+
+        <h3>二、萌芽期：2022 到 2023 年中，先证明“链上订单簿不是伪命题”</h3>
+        <p>按 Eco 对空投历史的梳理，Hyperliquid 的积分追踪可以回溯到 2022 年 11 月前后的测试网与早期阶段。这说明项目至少在那个时间点前后已经开始用真实交互去筛用户，而不是停留在概念宣讲。到了 2023 年 6 月 14 日，官方统计站点已经开始记录核心交易指标，这基本可以视为它主网上线与交易行为成形的起点之一。</p>
+        <p>这阶段最重要的任务，不是代币，也不是生态，而是验证一件很多人不信的事：完全链上订单簿，能不能真的给到接近中心化交易所的使用感。官方文档后来给出的数字很激进：HyperCore 当前支持大约 20 万订单每秒；对于地理位置接近节点的客户端，中位端到端延迟约 0.2 秒，99 分位约 0.9 秒。单看数字你可以怀疑营销，但市场选择很诚实，后续成交量爬升说明至少在高频交易用户最敏感的那一环，它已经跨过“能用”和“想用”的分水岭。</p>
+        <p>更关键的是，它没有把订单簿外包给链下引擎再把结果回写链上，而是坚持把订单、撤单、成交、清算都放进同一套 HyperBFT 共识序列里。这件事技术上很重，商业上却非常值钱。因为它决定了 Hyperliquid 向外出售的不是“某个 APP 的便利”，而是“全链统一时序下的真实金融状态”。一旦这个东西跑起来，交易本身就是流动性入口，流动性又是未来一切应用的公共底座。</p>
+        <p>这也是为什么 Hyperliquid 早期没有急着讲生态。它知道自己先要解决的不是“开发者会不会来”，而是“专业交易者肯不肯留下”。对金融基础设施来说，先有深水池，再谈码头、仓库和市场。顺序错了，后面都白搭。</p>
+
+        <h3>三、加速期：2023 下半年到 2024 年，交易体验先出圈，社区叙事后补票</h3>
+        <p>2023 年下半年到 2024 年，Hyperliquid 真正完成了从“高手圈子里的链上交易场”到“整个加密市场都必须关注的 perp DEX”转身。这里的增长不是靠大规模上币消息，也不是靠交易挖矿补贴，而是靠两种很硬的东西：一是订单簿体验在同类里明显更接近 CEX；二是市场逐渐意识到，这个团队并没有按老套路给 VC 和做市商留下最肥的桌位。</p>
+        <p>这两点叠在一起，形成一种极其稀缺的情绪：用户第一次觉得，自己在一个高性能交易场里，不只是流动性来源，还是未来价值分配的主要承接者。很多协议把“社区优先”当营销文案，Hyperliquid 选择把这件事往产品结构里写。它让交易行为、积分、HLP、后续分配之间形成可理解的路径。这条路径未必完全透明，但足够让市场形成预期。</p>
+        <p>这里有个常被忽略的点：Hyperliquid 的增长不是“链先火、交易后火”，而是“交易先火、链的故事才成立”。这和多数新公链路线完全相反。别人要先讲愿景，再拉开发者，再等应用长出来。Hyperliquid 是先用交易吞掉注意力，再说服市场：既然最有价值的链上活动之一已经在这里，为什么不把更多金融原语也放到这里？这个叙事转换非常重要，因为它让 Hyperliquid 从一个品类应用，慢慢长成一个基础设施容器。</p>
+
+        <h3>四、代币时刻：2024 年 11 月 29 日，HYPE 不是发币，而是给整套机器装上股权幻觉</h3>
+        <p>真正把 Hyperliquid 推到主流视野中央的，不是某次版本更新，而是 2024 年 11 月 29 日的 HYPE genesis 分发。Eco 的梳理写得很清楚：大约 3.1 亿枚 HYPE，也就是总供应量的约 31%，直接打给了约 9.4 万个钱包；没有复杂 claim 流程，没有错过即作废的领空投戏码，用户醒来钱包里就有币。这个动作看起来像营销，其实更像组织设计。</p>
+        <p>为什么这么说。因为它改变的不是价格，而是归属感。大多数协议的发币，本质是给旧股东提供二级市场出口；Hyperliquid 这次分配，至少在外部感知上，建立的是“没有传统 VC 砸盘悬崖、早期使用者就是主要持有人”的秩序。市场因此给了它极高溢价。空投之后 HYPE 没像常见新币那样高开低走，反而迅速形成了“这是少数社区真的先坐主桌”的集体叙事。</p>
+        <p>更要命的是，HYPE 分配不是孤立事件。它把前面两年的交易、做市、HLP、推荐体系全部结算成一张可流通的权益凭证。很多用户第一次意识到，自己在 Hyperliquid 上做的不是“空投任务”，而是在为一个已经赚钱、并且把赚钱结果往代币里回收的系统积累位置。这个心智变化极大。</p>
+        <p>从此之后，Hyperliquid 不再只是一个用得爽的产品，而是一个能承载财富效应的生态。加密市场里，后者的传播速度永远比前者快得多。</p>
+        <div class="quote">
+          <strong>时间点很关键：</strong>2024 年 11 月 29 日之后，Hyperliquid 的故事从“优秀链上交易所”切换成“自带现金流回收逻辑的交易型 L1”。这不是语义差异，是估值框架差异。
+        </div>
+
+        <h3>五、链化升级：从 HyperCore 到 HyperEVM，把交易流动性变成可编程底层</h3>
+        <p>如果说 HYPE 的发布解决的是所有权问题，那么 HyperEVM 解决的是边界问题。官方文档对架构写得非常直白：Hyperliquid 的状态执行分成 HyperCore 和 HyperEVM 两个组件。前者承载永续和现货订单簿；后者提供通用 EVM 执行环境，而且继承同一套 HyperBFT 安全性。</p>
+        <p>这个设计很妙。它没有让通用 EVM 直接拖慢交易主引擎，也没有让交易主引擎变成一座只服务官方前端的封闭黑箱。换句话说，HyperCore 是发动机，HyperEVM 是变速箱。前者把最赚钱、最敏感、最需要低延迟的交易活动牢牢握在自己手里；后者给外部开发者一个足够熟悉的入口，让他们能围着这台发动机造更多零部件。</p>
+        <p>官方文档还指出，HyperEVM 上 HYPE 是原生 gas，且 EIP-1559 基础费与优先费都被燃烧；当前没有官方 EVM 前端组件，交互主要通过 JSON-RPC。这个状态非常有意思。一方面，它说明 HyperEVM 还在早期，生态繁荣度暂时比不上成熟 EVM 链；另一方面，它也说明 Hyperliquid 没有把自己变成一个追求“万物皆能来”的泛 L1，而是仍然围绕核心金融场景谨慎扩张。</p>
+        <p>对于 HYPE 来说，HyperEVM 的意义远超“多一个用途”。只要未来有开发者围绕 HyperCore 流动性做借贷、结构化产品、策略金库、前端路由或者 RWA 永续，HYPE 就不再只是交易场权益，而会变成整条链的通用燃料。一个代币同时绑定交易手续费回收、PoS 质押安全和 EVM gas，稀缺性自然就不是纯叙事了。</p>
+
+        <h3>六、制度化时刻：质押、验证者、监管对话，项目开始学着像基础设施而不是产品</h3>
+        <p>代币上线后，Hyperliquid 很快开始补足一条基础设施该有的制度层。官方 staking 文档显示，HYPE 质押发生在 HyperCore 内部，采用委托式 PoS；验证者激活需要 1 万枚 HYPE 自我质押，委托有 1 天锁定期，而从 staking 账户转回 spot 账户有精确 7 天退出队列。奖励来自未来 emissions reserve，而不是凭空滥发。奖励曲线受总质押规模影响，官方举例在 4 亿 HYPE 总质押时年化大约 2.37%。</p>
+        <p>这里值得认真看两层。一层是好处：HYPE 从空投资产变成网络安全资产，持有者可以选择“把币压进系统里”，这会显著减少短期流通抛压，并让代币和链的安全真正绑定。另一层是风险：文档也明确写出当前没有自动 slashing。也就是说，Hyperliquid 在某些关键治理与惩罚机制上，仍然保留了比较强的社会层处理色彩。这种设计在早期能换取效率，但系统越大，市场越会追问规则是否足够机械化。</p>
+        <p>2025 年 5 月 22 日，Hyper Foundation 还通过 Medium 披露，Hyperliquid Labs 向美国 CFTC 关于 perpetuals 与 24/7 交易征求意见提交了回复。这件事不直接创造收入，却很说明问题：项目开始尝试把自己放进“未来金融市场结构讨论”的语境里，而不是只做一个游离在监管边缘的链上赌场。对于估值来说，这类动作的作用是抬叙事天花板。因为市场会开始问：如果链上永续要从边缘走向主流，谁最像那个最先被机构认真看的样板？Hyperliquid 想抢这个位置。</p>
+
+        <h3>七、危机暴露：2025 年 3 月 JELLY 事件，把去中心化成色摆到台面上</h3>
+        <p>真正让市场重新审视 Hyperliquid 的，不是上涨，而是危机。2025 年 3 月 26 日前后，JELLY 相关异常交易引发 Hyperliquid 下架合约并启动补偿。Coindesk、Cointelegraph 等媒体总结的共同信息是：平台认定出现可疑操纵后，对相关市场进行了人为处置，Hyper Foundation 承诺让大多数受影响用户补齐损失。</p>
+        <p>这次事件的意义非常大。它一方面证明，Hyperliquid 团队确实把“保护平台和用户”放在首位，愿意在极端情形下快速止血；另一方面也暴露出另一个事实：当系统遇到极端操纵、连锁清算或流动性扭曲时，Hyperliquid 仍然保留了强干预能力。对部分交易者来说，这是一种负责任；对强调不可篡改的纯链上原教旨主义者来说，这是一次信仰打折。</p>
+        <p>但恰恰在这里，Hyperliquid 的真实位置被看清了。它从来不是一条为抽象中立而生的链，它是为金融执行而生的链。金融执行最怕系统性死亡，所以它天然更偏向风控优先、市场完整性优先。JELLY 事件不是偶发污点，而是它底层哲学的一次外化：必要时宁可承受“像中心化”的舆论，也要避免撮合系统被攻击成废墟。</p>
+        <p>这个选择会带来长期折价还是溢价，要看未来。若 Hyperliquid 能把这种危机处置逐步制度化、参数化、治理化，它会被视为成熟；若始终停留在“团队拍板”的灰区，它就会在估值上长期背着治理折价。市场现在显然还愿意给它耐心，但耐心不是无限的。</p>
+
+        <h3>八、成熟期：2025 到 2026，Hyperliquid 从“perp DEX 王者”过渡成“现金流型链”</h3>
+        <p>如果只看交易市场份额，Hyperliquid 在 2025 年已经把故事讲完了一半。CoinGecko 2025 Q1 报告显示，Hyperliquid 在 Top 10 perp DEX 中的成交量市占率达到 68.8%，而到 2025 Q2 又抬升到 72.7%；同一份 Q1 报告里，它的 open interest 份额约为 76.5% 到 77%。这已经不是“领先”，而是近似单边统治。曾经的老大 dYdX，在这个时间窗里已经明显掉队。</p>
+        <p>更惊人的是全年尺度。CoinGecko 2025 年报给出的总结是，2025 年 Top 10 perp DEX 总成交量约 6.7 万亿美元，而 Hyperliquid 一家约 2.9 万亿美元。这个数字的含义，不只是它在 DEX 里大，而是它开始进入与中型 CEX 放在同一张桌子上比较的区间。市场不再问“它是不是最好用的链上永续”，而是问“它是不是正在吃中心化衍生品市场的份额”。</p>
+        <p>到了 2026 年 5 月前后，从 DeFiLlama 与 CoinGecko 抓到的快照看，Hyperliquid 依然保持高收入特征。DeFiLlama 页面显示其年化 fees 约 12.79 亿美元、年化 revenue 约 11.52 亿美元、累计 perp volume 约 3.399 万亿美元；CoinGecko 页面则显示 HYPE 价格约 47.97 美元，市值约 114.1 亿美元，流通量约 2.384 亿枚，最大供应 10 亿枚。两家数据口径不同，但指向同一个事实：Hyperliquid 已经从“高增长协议”变成了“高现金流协议”。</p>
+        <p>这时 HYPE 的估值逻辑也变了。它不再只是对“未来生态可能很大”的押注，而越来越像对“已有交易现金流 + 未来链上扩张期权”的双重定价。很多代币最大的问题，是价格走在产品前面；HYPE 相对少见的一点，是产品和手续费先跑出来了，价格是在追认这个事实。</p>
+      </section>
+
+      <section id="timeline">
+        <h2>关键时间轴</h2>
+        <p>下面这条时间轴，不替代上面的叙事，只是把关键节点压缩成一眼能扫完的结构。点击节点可展开详情。</p>
+        <div class="timeline">
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2022.11</span>
+              <h3>早期测试与积分起点</h3>
+              <p class="timeline-summary">说明 Hyperliquid 很早就开始用真实交互筛选核心用户，而不是只讲概念。</p>
+              <div class="timeline-detail">
+                <p>Eco 对 HYPE 空投历史的梳理显示，第一阶段积分覆盖 2022 年 11 月到 2023 年 5 月的封闭 alpha 与测试活动。这意味着项目在公开大热之前，就已经围绕交易行为、做市、推荐与资本贡献积累用户画像。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2023.06</span>
+              <h3>官方统计站开始记录主网交易</h3>
+              <p class="timeline-summary">可视为主网交易活动成形的早期信号，Hyperliquid 开始让数据自己说话。</p>
+              <div class="timeline-detail">
+                <p>Hyperliquid Stats 页面把 2023 年 6 月 14 日作为历史数据起点。它不只给社区看热闹，也是在向专业交易者展示：延迟、持仓、成交和清算这些关键指标，我们敢公开摊开。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2024</span>
+              <h3>成交体验出圈，社区预期升温</h3>
+              <p class="timeline-summary">从小圈层产品变成主流链上永续焦点，市场开始期待 token 化结算。</p>
+              <div class="timeline-detail">
+                <p>这一年 Hyperliquid 完成产品口碑跃迁。用户不是因为“新链叙事”而来，而是因为交易体验、深度和手续费归属设计开始持续拉开与其他 perp DEX 的距离。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2024.11.29</span>
+              <h3>HYPE Genesis 分发</h3>
+              <p class="timeline-summary">约 3.1 亿枚 HYPE 直接发给约 9.4 万钱包，社区持有逻辑正式确立。</p>
+              <div class="timeline-detail">
+                <p>这是 Hyperliquid 的组织结构拐点。31% 供应直达早期用户，没有复杂 claim。空投之后价格强势，市场把它当成“少数先把价值分给社区的真钱协议”来重新估值。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2025.Q1</span>
+              <h3>HyperEVM 与质押结构成形</h3>
+              <p class="timeline-summary">Hyperliquid 不再只是交易场，开始变成可编程金融底层。</p>
+              <div class="timeline-detail">
+                <p>官方文档显示 HyperEVM 继承 HyperBFT 安全性，HYPE 成为原生 gas；同时 staking 上线，让 HYPE 同时承担网络安全和资本锁定职责。代币从“空投资产”切换为“系统权益资产”。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2025.03.26</span>
+              <h3>JELLY 事件暴露治理张力</h3>
+              <p class="timeline-summary">团队出手止血保护系统，但也让“去中心化成色”第一次被全市场强行审题。</p>
+              <div class="timeline-detail">
+                <p>可疑交易导致相关合约被处置并补偿。短期看平台守住了系统安全与用户资金体验，长期看则提醒所有人：Hyperliquid 不是完全无人治理的自动机，它保留了明显的人治风控接口。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2025.Q2</span>
+              <h3>Perp DEX 市占率破七成</h3>
+              <p class="timeline-summary">从领先者变成统治者，Hyperliquid 开始直接和中型 CEX 比规模。</p>
+              <div class="timeline-detail">
+                <p>CoinGecko 2025 Q2 报告给出 72.7% 的 Top 10 perp DEX 成交量份额。这个级别的集中度意味着，Hyperliquid 的对手不再只是 DEX 同类，而是整个衍生品市场结构。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <span class="timeline-date">2026.05</span>
+              <h3>现金流型链地位确立</h3>
+              <p class="timeline-summary">高市值、高费用、高持仓并存，HYPE 被市场当作“交易收入期权 + 链扩张期权”定价。</p>
+              <div class="timeline-detail">
+                <p>截至 2026 年 5 月前后，CoinGecko 与 DeFiLlama 快照均显示 Hyperliquid 维持十亿美元级年化收入能力、十亿美元级 open interest 与约百亿美元级 HYPE 市值。故事已从产品验证进入资本结构验证。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cross-sectional">
+        <h2>横向分析</h2>
+        <p>Hyperliquid 所在的赛道不是“DEX”这么宽泛，而是更窄、更残酷的“链上永续 + 链上金融执行层”。真正值得对比的，不是所有交易产品，而是那些试图同时解决深度、延迟、资本效率和交易员黏性的系统。这里我选四个最有代表性的参照物：dYdX、Jupiter Perps、GMX、Drift。</p>
+
+        <h3>一、对 dYdX：同样是订单簿，但历史包袱完全不同</h3>
+        <p>dYdX 是老牌 perp DEX，曾经一度几乎等于“链上永续”的代名词。它最大的历史优势是先发、品牌和成熟交易者心智；最大的历史包袱，是它从以太坊生态一路迁移和重构，市场结构分层太多，叙事和产品之间逐渐有缝。Hyperliquid 则是从第一天就以单体系统的方式设计，链、撮合、风险和代币分配逻辑是一开始就焊死的。</p>
+        <p>这带来的结果，是两者现在看起来都像“订单簿 perp DEX”，但用户感知完全不同。dYdX 像一个有深厚资历、制度也比较完整的老交易场；Hyperliquid 像一个从零开始按现代高频交易逻辑搭出来的新交易场。前者更像搬迁与继承，后者更像原生一体化。</p>
+        <p>市场份额已经说明很多。CoinGecko 2025 Q1、Q2 报告里，dYdX 在 Top 10 perp DEX 里的成交与 OI 份额已明显掉到边缘，而 Hyperliquid 稳定在七成上下。问题不只是功能谁多谁少，而是谁更像专业交易者愿意长期驻留的主场。当前答案，显然站在 Hyperliquid 这边。</p>
+
+        <h3>二、对 Jupiter Perps：分发很强，但它的母体首先是 Solana 交易入口</h3>
+        <p>Jupiter 的强，强在分发。它背靠 Solana 最强的交易聚合入口，零售用户基数大，生态协同强，产品触达极广。Jupiter Perps 因此更像“大流量交易门户里的衍生品模块”，天然有获客优势。Hyperliquid 则相反，它不是入口型产品，而是交易本身就是入口。</p>
+        <p>这差异会导致两个系统在最核心目标上不同。Jupiter 更像在 Solana 金融超市里不断扩品类；Hyperliquid 更像围绕永续这个现金牛建立一整套新的金融城区。前者胜在生态整合与零售触达，后者胜在专业交易深度与平台统一性。</p>
+        <p>用户为什么选 Jupiter Perps？很多时候不是因为它是最强的永续引擎，而是因为他本来就在 Jupiter 上换币、找机会、刷生态，顺手做 perp。用户为什么选 Hyperliquid？更多是因为他想把 perp 交易当主战场。这种“顺手用”与“主力用”的差别，最终会决定谁能吃到更高频、更高价值的流量。</p>
+
+        <h3>三、对 GMX：从 AMM 风险仓位逻辑，到订单簿流动性逻辑</h3>
+        <p>GMX 代表的是另一条 perp DEX 路线：AMM / vault 模型。它的历史地位很高，因为它证明了链上永续不一定非要走订单簿，也能靠 GLP 这类对手盘结构撑起相当规模的交易市场。它的优点是机制直观、被动流动性参与感强、收益故事好讲；它的缺点是当市场结构复杂、资产扩展、专业交易者需求提升时，订单簿体验和价格精度往往更难继续往上抬。</p>
+        <p>Hyperliquid 和 GMX 的差异，不是新旧，而是底层哲学。GMX 的世界里，交易是围绕流动性池展开；Hyperliquid 的世界里，流动性池、做市、清算和撮合都围绕订单簿时序展开。前者适合把交易金融化成收益产品，后者适合把交易工业化成基础设施。</p>
+        <p>因此两者在用户口碑上也不一样。GMX 更容易吸引被动收益、生态参与和中等频率交易用户；Hyperliquid 更容易吸引对滑点、深度、下单反馈和大额执行更敏感的交易者。资本市场通常会给后者更高的结构性估值，因为专业交易行为更高频、更稳定，也更容易沉淀成现金流飞轮。</p>
+
+        <h3>四、对 Drift：同属高性能链生态，但 Hyperliquid 一体化更彻底</h3>
+        <p>Drift 是 Solana 生态里非常有代表性的 perp 协议，产品感也不错，策略类与生态类整合能力强。它的问题不是不优秀，而是它所依附的上层秩序不是自己完全掌控。它要和 Solana 上更大的叙事、拥堵、基础设施节奏、钱包流量结构一起呼吸。Hyperliquid 则更像把自己命门都收在手里：链是自己的、交易引擎是自己的、代币经济也是自己的。</p>
+        <p>这种垂直一体化在牛市里尤其值钱。因为当交易量飙升时，Hyperliquid 不是只赚协议费，它还在强化链本身、代币本身和生态本身；Drift 的优秀表现则部分会外溢给 Solana 整体。你可以说后者更开放，也可以说前者更“资本效率化”。从代币投资视角看，Hyperliquid 更容易形成完整闭环。</p>
+
+        <h3>五、竞品格局结论：Hyperliquid 现在最大对手，不是某个 DEX，而是它自己能不能继续维持“高性能 + 高中立”的平衡</h3>
+        <p>横向看完以后，会发现 Hyperliquid 已经不是单纯在和某一个协议贴身肉搏。dYdX 是历史上被它超车的老王者，Jupiter Perps 是入口型生态平台，GMX 是另一条机制路线的代表，Drift 则是高性能链生态里的重要玩家。它们都还会继续活，但大多在不同生态位上生存，不再直接决定 Hyperliquid 的天花板。</p>
+        <p>Hyperliquid 真正的难题是另一个：当你把高频交易、PoS 安全、EVM 扩张和代币资本结构绑在一起后，系统复杂度会指数上升。未来它不一定死于外部竞争，更可能死于内部平衡失手。比如交易量爆发时风控边界怎么定，EVM 生态要不要大开闸门，验证者分布什么时候足够去中心化，代币回收机制是否会被市场解读成过度金融工程。这些问题，竞品替它回答不了，只有它自己能回答。</p>
+        <div class="tag-row">
+          <span class="tag">订单簿原生</span>
+          <span class="tag">专用 L1</span>
+          <span class="tag">高频交易用户主场</span>
+          <span class="tag">手续费回收强</span>
+          <span class="tag">治理成色待继续证明</span>
+        </div>
+      </section>
+
+      <section id="comparison-table">
+        <h2>核心对比汇总</h2>
+        <p>表格是骨架，正文是血肉。先看这里抓住差异，再回上文理解为什么这些差异会出现。</p>
+        <div class="table-wrap">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>对比维度</th>
+                <th>Hyperliquid</th>
+                <th>dYdX</th>
+                <th>Jupiter Perps</th>
+                <th>GMX</th>
+                <th>Drift</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>底层结构</td>
+                <td>自研 L1，HyperCore + HyperEVM 双层执行，链与交易一体化最彻底。</td>
+                <td>老牌订单簿 perp DEX，历史迁移路径更长，系统连续性不如 Hyperliquid 紧。</td>
+                <td>依附 Solana 流量入口，perps 是更大交易分发体系的一部分。</td>
+                <td>AMM / vault 路线代表，流动性组织逻辑与订单簿不同。</td>
+                <td>高性能链生态 perp 协议，整合能力强，但底层命门不完全自控。</td>
+              </tr>
+              <tr>
+                <td>核心用户</td>
+                <td>把 perp 交易当主战场的专业与半专业交易者。</td>
+                <td>老牌链上衍生品用户、重视成熟品牌与历史信誉的人。</td>
+                <td>Solana 原生零售、生态内机会型交易者。</td>
+                <td>做收益、做中频交易、愿意参与 LP 风险敞口的人。</td>
+                <td>Solana 生态深度用户、策略玩家、组合交易者。</td>
+              </tr>
+              <tr>
+                <td>交易体验</td>
+                <td>核心卖点就是低延迟、高深度、链上可验证下的接近 CEX 体验。</td>
+                <td>依然专业，但整体心智热度与流动性吸引力已被超车。</td>
+                <td>入口顺滑，生态联动强，但“专业主场感”较弱。</td>
+                <td>机制稳，但大额与高频执行体验天花板更早到来。</td>
+                <td>功能丰富，生态友好，但规模与心智集中度仍弱于 Hyperliquid。</td>
+              </tr>
+              <tr>
+                <td>代币价值锚</td>
+                <td>gas + staking + governance + 手续费回收，职责最完整。</td>
+                <td>更偏治理与生态激励，现金流映射感相对弱。</td>
+                <td>更多受 Solana 生态分发与平台综合叙事影响。</td>
+                <td>收益故事与协议使用强相关，但结构偏单一赛道。</td>
+                <td>生态与协议协同并存，但资本闭环不如 Hyperliquid 紧。</td>
+              </tr>
+              <tr>
+                <td>市场地位</td>
+                <td>2025 年已长期占据 Top 10 perp DEX 七成左右份额，事实标准制定者。</td>
+                <td>从旧王者退到重要参照物，更多像历史基准。</td>
+                <td>生态平台型竞争者，不是纯 perp 主场统治者。</td>
+                <td>细分机制代表，仍重要，但更像另一种产品哲学。</td>
+                <td>强劲二线玩家，有活力，但暂未改写行业重心。</td>
+              </tr>
+              <tr>
+                <td>明显短板</td>
+                <td>治理与去中心化成色仍被追问，极端事件处置的人治感较强。</td>
+                <td>迁移与历史路径较重，增长弹性弱于新系统。</td>
+                <td>perps 不是唯一中心，资源注意力天然分散。</td>
+                <td>订单簿精度、高频体验和资本效率故事都较弱。</td>
+                <td>规模效应尚未完全滚起来，容易被更强主场吸走注意力。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="token">
+        <h2>HYPE 代币拆解</h2>
+        <p>讲 Hyperliquid，不能把 HYPE 当附属品。相反，HYPE 是这套系统从“高质量产品”跨到“资本效率机器”的关键转轴。很多代币的问题，是功能太少、归因太弱、只有治理皮肤；HYPE 的特别之处，是它把三个最硬的场景绑在了一起。</p>
+
+        <h3>一、HYPE 做什么</h3>
+        <ul>
+          <li><strong>Gas：</strong>官方 HyperEVM 文档明确写明，HYPE 是 HyperEVM 原生 gas。只要 EVM 生态活起来，HYPE 就天然有基础需求。</li>
+          <li><strong>Staking：</strong>官方 staking 文档写明 HYPE 用于委托给验证者，支撑 HyperBFT 共识，激活验证者需 1 万 HYPE 自委托。</li>
+          <li><strong>Governance / Protocol Lever：</strong>虽然治理边界仍在演化，但 HYPE 已经不只是投票筹码，而是协议参数与资源分配的重要锚。</li>
+          <li><strong>Value Accrual：</strong>官方费用文档与 DeFiLlama 方法论都指向同一件事：大量交易手续费会自动导向 Assistance Fund 并回收 HYPE，已进入该地址的 HYPE 被视作永久移出流通与总量。</li>
+        </ul>
+
+        <h3>二、分配结构：为什么市场把它当成“社区先上桌”样板</h3>
+        <p>根据多家媒体对官方 genesis 公告的整理，以及 Eco 的后续梳理，HYPE 初始 10 亿最大供应的核心分配逻辑大致是：</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>分配项</th>
+                <th>大致占比</th>
+                <th>意义</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Genesis 分发</td>
+                <td>约 31%</td>
+                <td>直接打给早期用户，形成极强的“社区拿到主筹码”叙事。</td>
+              </tr>
+              <tr>
+                <td>Future emissions / community rewards</td>
+                <td>约 38.88%</td>
+                <td>给未来激励、生态扩张、验证者与社区留空间，避免一发完就失去调节能力。</td>
+              </tr>
+              <tr>
+                <td>核心贡献者</td>
+                <td>约 23.8%</td>
+                <td>保证团队长期绑定，但也意味着未来释放节奏始终是估值里的重要变量。</td>
+              </tr>
+              <tr>
+                <td>Hyper Foundation</td>
+                <td>约 6%</td>
+                <td>为基金会预算、生态运作和制度建设留出财政能力。</td>
+              </tr>
+              <tr>
+                <td>Community grants / 其他</td>
+                <td>很小</td>
+                <td>用于更精细的生态激励与提案机制。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>这套分配的微妙之处在于，它既给了市场足够强的公平感，又没有把未来激励空间一次性耗光。空投时大家最兴奋的是“没有传统 VC 天坑”，但从更冷静的角度看，真正重要的是：未来还留着足够多代币，可以继续为验证者、开发者和生态应用设计激励，而不是发完一波就失血。</p>
+
+        <h3>三、当前市场状态：截至 2026 年 5 月 19 日，HYPE 已进入主流加密资产观察名单</h3>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="label">价格</div>
+            <div class="value">约 $48</div>
+            <p class="desc">Finance 工具快照给出约 $48.01；CoinGecko 页面快照约 $47.97，属正常刷新差。</p>
+          </div>
+          <div class="metric-card">
+            <div class="label">市值</div>
+            <div class="value">约 $114.1 亿</div>
+            <p class="desc">CoinGecko 页面显示市值约 $11.41B，排名约第 12 名。</p>
+          </div>
+          <div class="metric-card">
+            <div class="label">流通量</div>
+            <div class="value">约 2.384 亿枚</div>
+            <p class="desc">CoinGecko 页面显示估算流通量 238,385,315，最大供应 10 亿枚。</p>
+          </div>
+          <div class="metric-card">
+            <div class="label">FDV</div>
+            <div class="value">约 $460.7 亿</div>
+            <p class="desc">流通市值只占 FDV 一部分，未来释放与实际 burn 节奏仍是关键估值变量。</p>
+          </div>
+        </div>
+
+        <h3>四、为什么 HYPE 比很多“交易所币”更难简单类比</h3>
+        <p>有人会把 HYPE 类比成 BNB、DYDX、JUP 或者某种“链上交易平台币”。这类比有用，但都只对了一半。HYPE 像 BNB 的地方在于，它绑定了平台流量和系统使用；像 DYDX 的地方在于，它立足衍生品交易；像公链 gas 币的地方在于，它还是执行层燃料。但它又和这些都不一样，因为 Hyperliquid 把这些角色压进了同一资产里，而且底层系统本身就高度一体化。</p>
+        <p>这意味着 HYPE 的估值不应该只看“用户会不会买币”，更该看“交易量是否持续、费用回收是否持续、EVM 生态是否扩张、治理风险是否下降”。一旦只盯价格，就容易把它误判成高 beta 热门币；一旦把它还原成系统接口，就会看清楚：它本质上是在卖对 Hyperliquid 整体金融机器的权益暴露。</p>
+
+        <h3>五、HYPE 的三大风险</h3>
+        <ul>
+          <li><strong>释放风险：</strong>流通量仍远低于最大供应，未来团队、基金会、社区激励的节奏会直接影响估值想象空间。</li>
+          <li><strong>治理折价：</strong>JELLY 事件表明系统在极端情况下仍会出现强干预。市场愿意容忍一次，不代表愿意无条件容忍很多次。</li>
+          <li><strong>扩张错配：</strong>如果 HyperEVM 生态迟迟长不大，HYPE 可能长时间被视作“高现金流交易币”而不是“交易链原生资产”，估值乘数会受限。</li>
+        </ul>
+      </section>
+
+      <section id="insights">
+        <h2>横纵交汇洞察</h2>
+        <p>现在把两条轴真正交叉一下。纵向看，Hyperliquid 的每个关键节点都在强化一个中心事实：它不是从通用链演化成交易协议，而是从交易协议反推成一整条链。横向看，它今天之所以能站在所有 perp DEX 的上方，不是因为它“功能更多”，而是因为它在历史上做了几件竞品很难回头补的事：自己掌握链、自己掌握订单簿、自己定义费用归属、在发币时把主要财富效应先给社区。</p>
+        <p>换句话说，Hyperliquid 当下的竞争位置，是被早期结构性选择塑造出来的。订单簿上链的执念，决定了它后来的高频交易体验；不依赖传统 VC 的路径，决定了它后来空投时的舆论优势；先做 perp、后长 EVM 的顺序，决定了它现在不像一条空泛公链，而像一条已经拥有现金流母体的金融链。这些都不是后来轻松加上的模块，而是早期决策锁出来的结果。</p>
+        <p>反过来看，今天它的弱点也都有历史根源。JELLY 事件之所以伤到“去中心化成色”，本质上是因为 Hyperliquid 从起点上就更在意可执行金融市场，而不是抽象中立计算平台。高性能、强风控、市场完整性优先，这些特质让它更像一座真正的交易所；但一座真正的交易所，也天然更难满足最极端的链上原教旨主义。它的优点和缺点，本来就是同一棵树上的枝条。</p>
+        <p>如果把竞品也放回时间轴看，会更清楚。dYdX 是先跑出来再重构，所以历史包袱重；GMX 是从另一条机制路线长出来，所以交易工业化程度有限；Jupiter Perps 是生态流量的衍生模块，所以天然更分散；Drift 代表高性能链生态里的优秀协议，但无法像 Hyperliquid 那样把整条价值链都包进一个系统里。Hyperliquid 的今天，不是因为它把别人功能复制一遍，而是因为它把“交易市场”这件事当成一条系统工程从头做了一次。</p>
+        <p>我的判断是，HYPE 的长期上限，不主要取决于下一轮牛市情绪，而取决于 Hyperliquid 能否完成从“超级成功的交易协议”到“可信赖的金融基础设施”的再进化。前者市场已经基本承认，后者还在考试。考试内容包括：验证者去中心化是否继续改善，风险处置是否逐渐参数化，HyperEVM 生态是否真正出现原生应用，手续费回收机制是否继续稳定且透明。</p>
+
+        <h3>未来三种剧本</h3>
+        <div class="scenario-grid">
+          <div class="scenario">
+            <h4>最可能剧本</h4>
+            <p>Hyperliquid 继续稳坐链上永续龙头，HyperEVM 生态缓慢但持续起量，HYPE 被市场作为“高现金流交易链资产”定价，估值核心来自手续费回收和行业地位，而不是泛生态狂想。</p>
+          </div>
+          <div class="scenario">
+            <h4>最危险剧本</h4>
+            <p>再发生一次高争议强干预事件，或者验证者与治理集中问题迟迟不改善，市场开始给出显著治理折价。届时 HYPE 会被重新贴上“高效率但不够中立”的标签，乘数压缩会比交易量下滑更致命。</p>
+          </div>
+          <div class="scenario">
+            <h4>最乐观剧本</h4>
+            <p>Hyperliquid 把永续主场、现货流动性、HyperEVM 原生 DeFi、机构接口和更多金融资产都接到同一链上，HYPE 变成真正意义上的“链上金融操作系统权益币”。那时它对标的就不再只是 perp DEX，而是新型金融市场基础设施。</p>
+          </div>
+        </div>
+
+        <div class="quote">
+          <strong>最后一句判断：</strong>Hyperliquid 值得关注，不只是因为它涨得猛，而是因为它可能是少数已经证明“链上交易可以先赢体验，再赢现金流，最后再试图赢制度”的项目。HYPE 值得研究，也不是因为它像哪种老币，而是因为它把交易所币、gas 币、质押币和治理币压成了一个新的混合体。
+        </div>
+      </section>
+
+      <section id="sources">
+        <h2>信息来源</h2>
+        <p>以下链接为本报告写作时实际参考的主要来源。一手来源优先，二手来源只用于补足事件背景、历史梳理与市场对比。</p>
+        <div class="sources-list">
+          <div class="source-item">
+            <a href="https://hyperliquid.gitbook.io/hyperliquid-docs" target="_blank" rel="noopener noreferrer">Hyperliquid Docs - About Hyperliquid</a>
+            <p>官方总览：Hyperliquid 定位、HyperBFT、HyperCore、HyperEVM、吞吐与架构说明。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/hyperevm" target="_blank" rel="noopener noreferrer">Hyperliquid Docs - HyperEVM</a>
+            <p>官方说明 HYPE 作为 HyperEVM 原生 gas，以及费用燃烧与 RPC 现状。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://hyperliquid.gitbook.io/hyperliquid-docs/hypercore/staking" target="_blank" rel="noopener noreferrer">Hyperliquid Docs - Staking</a>
+            <p>官方 staking 机制、验证者自委托门槛、退出队列、奖励来源与当前无自动 slashing 说明。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://hyperliquid.gitbook.io/hyperliquid-docs/trading/fees" target="_blank" rel="noopener noreferrer">Hyperliquid Docs - Fees</a>
+            <p>官方费用去向、Assistance Fund 逻辑、社区收益归属说明。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://stats.hyperliquid.xyz/" target="_blank" rel="noopener noreferrer">Hyperliquid Stats</a>
+            <p>官方历史统计站，用于确认交易指标记录起点与系统数据公开习惯。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://www.coingecko.com/en/coins/hyperliquid" target="_blank" rel="noopener noreferrer">CoinGecko - Hyperliquid (HYPE)</a>
+            <p>价格、市值、流通量、FDV、总供应、估算烧毁数量等时间敏感市场数据。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://defillama.com/protocol/hyperliquid?fees=true&groupBy=monthly&perpsVolume=false&tvl=false" target="_blank" rel="noopener noreferrer">DeFiLlama - Hyperliquid</a>
+            <p>Fees、Revenue、Perp Volume、Open Interest 与 holder revenue 方法论快照。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://assets.coingecko.com/reports/2025/CoinGecko-2025-Q1-Crypto-Industry-Report.pdf" target="_blank" rel="noopener noreferrer">CoinGecko 2025 Q1 Crypto Industry Report</a>
+            <p>用于引用 Hyperliquid 在 2025 Q1 的 perp DEX 成交量份额与 OI 份额。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://assets.coingecko.com/reports/2025/CoinGecko-2025-Q2-Crypto-Industry-Report.pdf" target="_blank" rel="noopener noreferrer">CoinGecko 2025 Q2 Crypto Industry Report</a>
+            <p>用于引用 Hyperliquid 在 2025 Q2 的 Top 10 perp DEX 市占率约 72.7%。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://assets.coingecko.com/reports/2025/CoinGecko-2025-Annual-Crypto-Industry-Report.pdf" target="_blank" rel="noopener noreferrer">CoinGecko 2025 Annual Crypto Industry Report</a>
+            <p>用于引用 2025 年 Hyperliquid 约 2.9 万亿美元成交量与全年行业格局变化。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://eco.com/support/en/articles/15039718-hyperliquid-airdrop-what-happened-and-what-s-next" target="_blank" rel="noopener noreferrer">Eco - Hyperliquid Airdrop: What Happened and What's Next</a>
+            <p>用于梳理 2024 年 11 月 29 日 HYPE genesis 分发规模、覆盖钱包数、积分阶段与后续激励空间。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://hyperfnd.medium.com/defi-as-a-more-open-transparent-and-efficient-financial-system-c2c9e9fa2081" target="_blank" rel="noopener noreferrer">Hyper Foundation Medium - CFTC Comment Letter Note</a>
+            <p>用于确认 2025 年 5 月 Hyperliquid Labs 对美国 CFTC 永续与 24/7 交易征求意见的公开回应。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://www.ccn.com/news/crypto/hyperliquid-tvl-unconventional-approach/" target="_blank" rel="noopener noreferrer">CCN - Jeff Yan on How Hyperliquid Built a DeFi Unicorn With No VCs and No Shortcuts</a>
+            <p>用于补充创始团队“无 VC、低曝光、以交易与基础设施为中心”的外部媒体描述。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://cointelegraph.com/news/hyperliquid-delists-jelly-perps-citing-suspicious-activity" target="_blank" rel="noopener noreferrer">Cointelegraph - Hyperliquid delists JELLY perps, citing suspicious activity</a>
+            <p>用于补充 JELLY 事件的公开时间线与补偿承诺。</p>
+          </div>
+          <div class="source-item">
+            <a href="https://www.coindesk.com/markets/2025/03/26/hyperliquid-delists-jellyjelly-after-vault-squeezed-in-usd13m-tussle" target="_blank" rel="noopener noreferrer">CoinDesk - HyperLiquid Delists JELLY After Vault Squeezed in $13M Tussle</a>
+            <p>用于补充 JELLY 事件的媒体复盘与争议焦点。</p>
+          </div>
+        </div>
+        <p class="footnote">说明：部分数据存在不同平台统计口径差异。若我在正文中做了推断，均基于上述来源交叉后得出，不把单一未经证实的市场传闻当结论。</p>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    function toggleDetail(node) {
+      node.classList.toggle("expanded");
+    }
+  </script>
+</body>
+</html>
