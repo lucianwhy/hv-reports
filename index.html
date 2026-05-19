@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hv-reports</title>
+  <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <p class="eyebrow">HV REPORTS</p>
+      <h1>横纵分析报告库</h1>
+      <p class="lead">公开托管多篇横纵分析 HTML 报告。每篇报告一个独立子路径，适合直接分享和长期归档。</p>
+    </header>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>报告列表</h2>
+        <p id="report-count">加载中...</p>
+      </div>
+      <div id="report-grid" class="grid"></div>
+    </section>
+  </main>
+
+  <script>
+    async function loadReports() {
+      const response = await fetch('./reports.json');
+      const reports = await response.json();
+      const grid = document.getElementById('report-grid');
+      const count = document.getElementById('report-count');
+
+      count.textContent = `共 ${reports.length} 篇`;
+      grid.innerHTML = reports.map((report) => `
+        <a class="card" href="./${report.slug}/">
+          <div class="meta">${report.date}</div>
+          <h3>${report.title}</h3>
+          <p>${report.summary}</p>
+          <span class="tag">${report.slug}</span>
+        </a>
+      `).join('');
+    }
+
+    loadReports().catch((error) => {
+      const grid = document.getElementById('report-grid');
+      const count = document.getElementById('report-count');
+      count.textContent = '加载失败';
+      grid.innerHTML = `<div class="empty">reports.json 读取失败：${error.message}</div>`;
+    });
+  </script>
+</body>
+</html>
