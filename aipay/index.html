@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>aipay - AI Agent支付横纵分析报告</title>
+  <style>
+    :root {
+      --title: #1a5276;
+      --subtitle: #1e8449;
+      --text: #2c3e50;
+      --muted: #5d6d7e;
+      --line: #2e86c1;
+      --paper: #f9fbfc;
+      --card: rgba(255, 255, 255, 0.9);
+      --border: rgba(26, 82, 118, 0.14);
+      --shadow: 0 20px 60px rgba(20, 52, 76, 0.12);
+      --serif: "Copernicus", "Tiempos Headline", "Cormorant Garamond", "EB Garamond", Georgia, serif;
+      --sans: "Styrene B", "StyreneB", Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(46, 134, 193, 0.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(30, 132, 73, 0.10), transparent 32%),
+        linear-gradient(180deg, #f6fbff 0%, #fbfcfd 48%, #f8fafb 100%);
+      line-height: 1.85;
+    }
+
+    a {
+      color: var(--title);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .toc-shell {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      z-index: 20;
+    }
+
+    .toc-toggle {
+      border: 1px solid rgba(26, 82, 118, 0.20);
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--title);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font: 600 13px var(--sans);
+      letter-spacing: 0.04em;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 30px rgba(26, 82, 118, 0.10);
+      cursor: pointer;
+    }
+
+    .toc-panel {
+      width: 250px;
+      margin-top: 10px;
+      padding: 16px 16px 12px;
+      border: 1px solid rgba(26, 82, 118, 0.12);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      display: none;
+    }
+
+    .toc-shell.open .toc-panel {
+      display: block;
+    }
+
+    .toc-panel h3 {
+      margin: 0 0 10px;
+      font: 700 18px var(--serif);
+      color: var(--title);
+    }
+
+    .toc-panel a {
+      display: block;
+      padding: 7px 0;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 56px 24px 88px;
+    }
+
+    .content {
+      width: min(860px, 100%);
+      margin: 0 auto;
+    }
+
+    .cover {
+      position: relative;
+      padding: 92px 56px 64px;
+      border-radius: 34px;
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(243, 249, 252, 0.92)),
+        linear-gradient(135deg, rgba(46, 134, 193, 0.12), rgba(30, 132, 73, 0.08));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .cover::before,
+    .cover::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .cover::before {
+      width: 280px;
+      height: 280px;
+      top: -120px;
+      right: -60px;
+      background: radial-gradient(circle, rgba(46, 134, 193, 0.18), transparent 70%);
+    }
+
+    .cover::after {
+      width: 240px;
+      height: 240px;
+      bottom: -120px;
+      left: -70px;
+      background: radial-gradient(circle, rgba(30, 132, 73, 0.16), transparent 70%);
+    }
+
+    .kicker {
+      position: relative;
+      z-index: 1;
+      color: var(--subtitle);
+      font-size: 13px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .cover h1 {
+      position: relative;
+      z-index: 1;
+      margin: 18px 0 10px;
+      font: 700 clamp(40px, 5vw, 58px) var(--serif);
+      color: var(--title);
+      letter-spacing: 0.01em;
+      text-align: center;
+    }
+
+    .subtitle {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      text-align: center;
+      font: 600 22px var(--sans);
+      color: var(--subtitle);
+      letter-spacing: 0.02em;
+    }
+
+    .meta {
+      position: relative;
+      z-index: 1;
+      margin: 26px auto 0;
+      max-width: 680px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .divider {
+      width: 130px;
+      height: 2px;
+      margin: 26px auto 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(46, 134, 193, 0.0), rgba(46, 134, 193, 0.85), rgba(30, 132, 73, 0.85), rgba(30, 132, 73, 0));
+    }
+
+    section {
+      margin-top: 36px;
+      padding: 38px 42px;
+      border-radius: 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 44px rgba(31, 74, 107, 0.08);
+      backdrop-filter: blur(8px);
+    }
+
+    h2 {
+      margin: 0 0 18px;
+      font: 700 34px var(--serif);
+      color: var(--title);
+    }
+
+    h3 {
+      margin: 30px 0 12px;
+      font: 700 24px var(--serif);
+      color: var(--title);
+    }
+
+    h4 {
+      margin: 24px 0 10px;
+      font: 700 18px var(--sans);
+      color: var(--subtitle);
+      letter-spacing: 0.01em;
+    }
+
+    p {
+      margin: 12px 0;
+      font-size: 16px;
+      text-align: justify;
+    }
+
+    .lead {
+      font-size: 18px;
+      color: #244864;
+    }
+
+    .quote {
+      margin: 22px 0;
+      padding: 18px 18px 18px 22px;
+      border-left: 3px solid var(--title);
+      background: rgba(26, 82, 118, 0.05);
+      border-radius: 0 16px 16px 0;
+      color: #34536b;
+    }
+
+    .tag-row,
+    .scenario-grid,
+    .insight-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .tag-row {
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      margin-top: 20px;
+    }
+
+    .tag {
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(241,247,251,0.9));
+      border: 1px solid rgba(46, 134, 193, 0.13);
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .tag strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--title);
+      font-size: 15px;
+    }
+
+    .timeline {
+      position: relative;
+      margin-top: 20px;
+      padding: 8px 0 8px 26px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 7px;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(46, 134, 193, 0.24), rgba(46, 134, 193, 0.92), rgba(30, 132, 73, 0.45));
+    }
+
+    .timeline-node {
+      position: relative;
+      margin: 0 0 18px;
+      padding: 0 0 0 22px;
+      cursor: pointer;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -1px;
+      top: 8px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid var(--line);
+      box-shadow: 0 0 0 6px rgba(46, 134, 193, 0.08);
+    }
+
+    .timeline-card {
+      padding: 18px 20px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(244,249,252,0.9));
+      border: 1px solid rgba(46, 134, 193, 0.12);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .timeline-node:hover .timeline-card {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 34px rgba(35, 88, 125, 0.10);
+    }
+
+    .timeline-date {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--subtitle);
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+
+    .timeline-card h3 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+
+    .timeline-summary {
+      margin: 0;
+      color: #3f5f77;
+    }
+
+    .timeline-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, margin-top 0.25s ease;
+    }
+
+    .timeline-node.expanded .timeline-detail {
+      max-height: 360px;
+      margin-top: 12px;
+    }
+
+    .scenario-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 20px;
+    }
+
+    .scenario {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(26, 82, 118, 0.12);
+    }
+
+    .scenario strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--title);
+    }
+
+    .comparison-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(26, 82, 118, 0.12);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+      background: rgba(255,255,255,0.96);
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: var(--title);
+      color: #fff;
+      padding: 16px 14px;
+      text-align: left;
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    tbody td {
+      padding: 16px 14px;
+      border-top: 1px solid rgba(26, 82, 118, 0.10);
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(246, 250, 252, 0.92);
+    }
+
+    tbody tr:hover {
+      background: rgba(233, 244, 250, 0.95);
+    }
+
+    .insight-grid {
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      margin-top: 18px;
+    }
+
+    .insight-card {
+      padding: 20px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(240,248,250,0.88));
+      border: 1px solid rgba(26, 82, 118, 0.12);
+    }
+
+    .insight-card strong {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--title);
+      font-size: 17px;
+    }
+
+    .sources {
+      padding-left: 18px;
+    }
+
+    .sources li {
+      margin: 10px 0;
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .page {
+        padding: 78px 16px 72px;
+      }
+
+      .cover,
+      section {
+        padding: 30px 22px;
+        border-radius: 24px;
+      }
+
+      h2 {
+        font-size: 30px;
+      }
+
+      .toc-shell {
+        top: 12px;
+        left: 12px;
+      }
+
+      .toc-panel {
+        width: min(82vw, 260px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toc-shell" id="tocShell">
+    <button class="toc-toggle" id="tocToggle" type="button">目录</button>
+    <nav class="toc-panel" id="tocPanel">
+      <h3>aipay</h3>
+      <a href="#definition">一句话定义</a>
+      <a href="#longitudinal">纵向分析</a>
+      <a href="#timeline">关键时间轴</a>
+      <a href="#cross-sectional">横向分析</a>
+      <a href="#comparison-table">核心对比汇总</a>
+      <a href="#insights">横纵交汇洞察</a>
+      <a href="#sources">信息来源</a>
+    </nav>
+  </div>
+
+  <div class="page">
+    <main class="content">
+      <header class="cover">
+        <div class="kicker">aipay / hv-analysis</div>
+        <h1>AI Agent 支付</h1>
+        <p class="subtitle">横纵分析法深度研究报告</p>
+        <p class="meta">研究时间：2026 年 5 月 20 日｜所属领域：Agentic Commerce / Payments｜研究对象类型：概念与赛道</p>
+        <div class="divider"></div>
+      </header>
+
+      <section id="definition">
+        <h2>一句话定义</h2>
+        <p class="lead">AI agent 支付，不是“把信用卡绑给聊天机器人”这么简单。它真正要解决的问题是：当执行主体从人变成软件代理之后，授权、身份、风控、结算、责任归属，到底还怎样成立。</p>
+        <p>如果把传统电商理解成“人点页面，再把支付结果推给后台”，那么 AI agent 支付试图重写的，就是这一整套路径。新的链路里，用户给出的是目标，不是每一步点击；做选择的是代理，不是页面；完成交易的也不再是肉眼确认后的人工动作，而是一个可验证、可限权、可追责的自动执行流程。于是支付不再只是 checkout 页最后那一下确认，而变成代理系统的内生能力。</p>
+        <div class="tag-row">
+          <div class="tag"><strong>核心命题</strong>让 agent 能花钱，但不能失控。</div>
+          <div class="tag"><strong>真正难点</strong>不是转账 API，而是授权边界、身份证明、风控与责任闭环。</div>
+          <div class="tag"><strong>赛道结构</strong>协议层、支付轨层、钱包层、身份层、治理层同时重构。</div>
+          <div class="tag"><strong>2026 现状</strong>从概念验证跨入基础设施竞速，标准战刚开始，终局远没定。</div>
+        </div>
+      </section>
+
+      <section id="longitudinal">
+        <h2>纵向分析</h2>
+        <p>AI agent 支付这条线，如果只从 2025 年 Visa、Mastercard、OpenAI、Google 那一轮集中发布开始看，会误判它是“突然爆发”的新概念。其实不是。它更像一条长期积压的问题链，在大模型把执行权交给代理之后，一口气被点燃了。支付世界原来默认的前提，几乎都写着一个没说出口的限定词：人。人有银行卡、人做 KYC、人读页面、人点确认、人承担争议责任。代理一旦接手执行，这些前提就开始松动。</p>
+
+        <h3>第一阶段：长时间的前史，支付互联网化，但没有 agent 化</h3>
+        <p>这段前史甚至能追到 HTTP 体系本身。HTTP 402 “Payment Required” 这个状态码早在上世纪就被保留了下来，但几十年里基本没被真正用起来。原因不神秘：互联网早有信息流，却没有真正原生的价值流。网页请求可以毫秒级发出去，付款动作却长期依赖信用卡、人工开户注册、订阅制结算、平台托管和事后对账。协议层留下了一个空位，现实世界却一直没有把它填满。</p>
+        <p>于是 Web2 的支付基础设施虽然越来越成熟，但成熟的方向是“让人类更顺滑地完成支付”，不是“让机器成为合法的付款主体”。Stripe、PayPal、卡组织、银行 API 都把体验做到极致了，可它们优化的是 checkout、风控、授权、退款、争议处理这些面向人的流程。它们默认有姓名、有证件、有收货地址、有设备指纹、有清晰的 consent。AI agent 并不天然拥有这些。</p>
+        <p>这一阶段还有一个隐藏后果：支付系统和服务访问系统是分离的。你访问一个 API，要么订阅、要么绑定平台账户、要么月结；你访问内容，要么登陆、要么看广告、要么被 paywall 挡住。也就是说，支付从来不是请求协议的一部分，而是请求之前的准备工作。这个设计对人类能忍，对 agent 却很差，因为 agent 最擅长的是按需调用，不擅长预先办齐所有手续。</p>
+
+        <h3>第二阶段：大模型把“会说”推成“会执行”，支付缺口暴露</h3>
+        <p>2023 年之后，LLM 应用从问答走向工作流。调用工具、写代码、执行浏览器动作、跨系统协同，慢慢让 agent 具备了半自动、再到准自动的执行能力。问题也随之变尖锐：如果一个代理能自己找数据、自己下单、自己调用收费 API，却每到付费环节都必须把控制权交还给人，那它在商业世界里就永远只能做半成品。</p>
+        <p>这时候，市场并没有先长出统一标准，而是先长出几种非常具体的补丁思路。Skyfire 2024 年把自己定义成“AI 的支付轨道”，很有代表性。它抓住的不是商户收单，而是“给 agent 一个可验证身份与可调用支付能力”，也就是 KYA 和 machine wallet 组合。Nevermined 则从另一端切进来：不是先问“agent 怎么付款”，而是先问“agent 服务怎么被计费、被限流、被结算”。这两类产品都说明一个事实，agent 支付最早不是从消费者购物起家，而是从 API、数据、工具调用这些机器消费场景里长出来的。</p>
+        <p>Payman 的切入更像金融机构视角。它强调的不是炫酷的代理购物，而是“资金动作必须落在银行级合规、审批、审计框架里”。这很关键。因为一旦代理开始动钱，银行和企业最关心的不是自然语言体验，而是“谁批准的、规则是否命中、日志是否完整、出了错谁能回溯”。也就是说，支付能力一进入真金白银世界，agent 产品就不得不从“能不能做”转向“谁敢放行”。</p>
+
+        <h3>第三阶段：2025 年，赛道从“缺口感知”进入“标准争夺”</h3>
+        <p>真正让这个概念从圈内基础设施问题，升级成全球支付行业显学的，是 2025 年一连串密集动作。4 月 29 日，Mastercard 发布 Agent Pay；4 月 30 日，Visa 发布 Intelligent Commerce。两家卡组织几乎前后脚入场，信号很明确：它们不再把 agent 当成边缘创新，而开始把它视为新的交易入口。</p>
+        <p>这两家的逻辑很像传统支付巨头的本能反应。它们并不想先发明一个全新货币体系，而是想把现有网络、令牌化、认证、争议处理、发卡与收单关系，延伸到 agent 时代。Visa 强调 trusted agent 与 payment credential 控制；Mastercard 强调 agentic tokens、passkeys、消费者限权与商户识别。翻译成人话就是：先保住现有支付网络的合法性，再把代理接进来。</p>
+        <p>但同一时期，另一条路线也在成形。2025 年 5 月 6 日 Coinbase 推出 x402，把搁置已久的 HTTP 402 从“保留状态码”重新激活成机器可读的支付握手机制。这个动作的意义远大于一个新协议发布。它相当于提出一种完全不同的判断：如果 agent 的主战场是 API、MCP 服务、数据端点、付费内容，那么最自然的支付位置就不该是卡页面，而该直接嵌在请求响应循环里。请求资源，收到 402，支付证明，重放请求，拿到结果。支付从表单变成协议。</p>
+        <p>6 月 Skyfire 推出 KYAPay，进一步把身份和支付打包成 agent-native 令牌；9 月 Google Cloud 发布 AP2，试图定义 agent、商户、支付提供方之间可互操作的开放框架；9 月底 Stripe 与 OpenAI 共同推出 ACP，并通过 ChatGPT 内 Instant Checkout 把 agentic commerce 第一次推向更大规模消费者界面。注意这里的顺序很有意思：先是协议补位，再是卡组织护城河加固，最后才是超级入口亲自下场做交易界面。</p>
+        <p>这说明 2025 年的核心变化不是“又多了几个支付产品”，而是行业第一次开始围绕同一个问题形成多个相互竞争的答案。到底 agent 支付应该长在卡网络上、长在开放协议上、长在稳定币和钱包上，还是长在 AI 平台与商户的双边协议里？这一年没有得出结论，但把问题彻底摊开了。</p>
+
+        <h3>第四阶段：2026 年，从概念秀场进入执行基础设施</h3>
+        <p>到 2026 年，赛道叙事开始从“谁提出了新词”变成“谁把交易真正跑起来”。一个很标志性的节点是 2026 年 5 月 7 日 AWS 发布 Amazon Bedrock AgentCore Payments 预览版。它没有重新发明支付协议，而是把 x402、钱包连接、额度控制、日志观测、Browser 工具接入，做成托管式基础设施。这件事透露出平台公司的判断：未来 agent 不是偶发式 demo，而是运行在生产环境里的服务；只要 agent 要在生产环境里付费，开发者就不想自己拼所有支付零件。</p>
+        <p>这也是整个赛道开始分层的时刻。上层是意图与消费入口，比如 ChatGPT、搜索、商户代理；中层是互操作协议，比如 AP2、ACP、x402；下层是执行与结算能力，比如卡网络、银行轨道、稳定币钱包、身份认证、风控与审计。以前很多公司把自己包装成“AI 支付平台”，现在则越来越清楚，它们实际占据的是不同层级。</p>
+        <p>与此同时，支付赛道内部的旧矛盾也在 agent 时代复活了。一个阵营相信“代理要接入真实世界，必须继承现有支付监管与品牌信任”，所以押注 Visa、Mastercard、银行、Stripe 这条线；另一个阵营相信“如果交易对象本来就是机器和 API，那么最适配的就该是 internet-native protocol + stablecoin settlement”，所以押注 x402、链上钱包、微支付和按调用结算。两边都不是空想，各自瞄准的其实是不同交易密度与不同风险等级的场景。</p>
+
+        <h3>这条时间线里，真正被锁定的几个决定</h3>
+        <p>第一，赛道没有从收单开始，而是从授权与身份开始。因为 agent 支付最难的从来不是把钱转出去，而是证明“这个代理为什么有权动这笔钱”。这直接解释了为什么 Visa 讲 trusted agent，Mastercard 讲 token，Skyfire 讲 KYA，Payman 讲 policy validation，Google 讲 audit trail。大家表面看上去产品不同，骨子里都在围绕同一个焦点打转：代理执行权如何被制度化。</p>
+        <p>第二，支付正在从页面体验问题变成协议问题。过去电商竞争 often 在前端；现在 agentic commerce 的竞争开始下沉到接口语义、支付证明格式、额度限制、身份链路、服务发现方式。谁定义协议，谁就更可能拿到生态入口。</p>
+        <p>第三，商户与服务提供者的激励结构在改变。对商户来说，agent 是新渠道，但也是新中间层；对 API 提供者来说，agent 是新客户，但只有按请求计费和自动结算成立，它才会真成为客户。这意味着 agent 支付不是支付公司的单点创新，而是商户分发、开发者经济、内容付费和云服务计费同时被重写。</p>
+        <p>所以这条赛道到 2026 年并没有“成熟”，它只是完成了一个关键转换：从抽象讨论，进入了真实的基础设施竞跑。后面谁能跑出来，不只看支付能力，还看谁能把授权、身份、责任、可观测性和开发者体验捏成同一个产品面。</p>
+      </section>
+
+      <section id="timeline">
+        <h2>关键时间轴</h2>
+        <div class="timeline">
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">1997 - 2022</span>
+              <h3>HTTP 402 留白，支付互联网化但非协议化</h3>
+              <p class="timeline-summary">支付长期附着在人类 checkout 流程上，HTTP 层保留了支付位置，但现实没有填进去。</p>
+              <div class="timeline-detail">
+                <p>HTTP 402“Payment Required”长期保留不用，反映出互联网一直缺一个原生价值流。支付可以在线完成，但不是请求协议的一部分，而是请求之前的开户、绑卡、订阅与人工确认流程。这个留白后来成为 x402 能爆发的历史伏笔。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2023 - 2024</span>
+              <h3>LLM 工具化，让“会执行”撞上“不会付款”</h3>
+              <p class="timeline-summary">代理开始调用工具、浏览网页、串联工作流，支付成为自动化链路里最硬的断点。</p>
+              <div class="timeline-detail">
+                <p>大模型从问答转向执行后，订阅式 API、人工审批式支付、网页表单式 checkout 都显得过于笨重。Skyfire 2024 年推出 AI 支付与身份轨道，说明最先被激活的需求并非消费者购物，而是机器购买数据、模型、API 与服务。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2025.04</span>
+              <h3>Mastercard Agent Pay 与 Visa Intelligent Commerce 相继发布</h3>
+              <p class="timeline-summary">卡组织正式承认 agent 将成为交易入口，核心策略是把现有信任网络延长到代理时代。</p>
+              <div class="timeline-detail">
+                <p>Mastercard 在 4 月 29 日发布 Agent Pay，Visa 在 4 月 30 日发布 Intelligent Commerce。两者都强调限权代理、令牌化、认证与商户识别，意味着支付巨头并不打算放弃主导权，而是要让代理交易继续跑在熟悉的网络上。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2025.05</span>
+              <h3>x402 发布，HTTP 402 被重新激活</h3>
+              <p class="timeline-summary">支付从页面动作下沉成协议动作，微支付与机器消费第一次有了自然接口。</p>
+              <div class="timeline-detail">
+                <p>Coinbase 在 5 月 6 日推出 x402，把“请求资源 - 返回 402 - 附带支付证明重试”的模式标准化。它不是卡网络延伸，而是把支付当成互联网协议的一部分，非常适合 API、MCP、内容付费和 agent-to-agent 服务调用。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2025.06 - 2025.09</span>
+              <h3>身份层与开放协议层加速成形</h3>
+              <p class="timeline-summary">Skyfire 推 KYA+Pay，Google 推 AP2，赛道开始围绕“授权格式和互操作语言”打标准战。</p>
+              <div class="timeline-detail">
+                <p>Skyfire 的 KYAPay 把 agent 身份和支付意图封装成可验证令牌；Google Cloud 的 AP2 则试图协调代理、商户、支付方三方通信。它们都在回答同一问题：代理不是人，如何被跨平台识别、限权和追责。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2025.09</span>
+              <h3>OpenAI + Stripe 用 ACP 把 agent 支付推向消费场景</h3>
+              <p class="timeline-summary">Instant Checkout in ChatGPT 让代理购物从概念进入真实前端，协议、商户和支付三端第一次一起露面。</p>
+              <div class="timeline-detail">
+                <p>Stripe 与 OpenAI 在 9 月 29 日发布 ACP，并让美国 ChatGPT 用户可直接购买 Etsy 商品。这里最重要的不是单一商城接入，而是商户后台、支付凭证、AI 界面之间终于形成一个可部署的闭环。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2026.05</span>
+              <h3>AWS AgentCore Payments 上线预览，执行基础设施成型</h3>
+              <p class="timeline-summary">平台方开始把支付能力做成 agent runtime 的一部分，说明市场预期已从 demo 走向生产。</p>
+              <div class="timeline-detail">
+                <p>AWS 在 2026 年 5 月 7 日发布 Bedrock AgentCore Payments，支持 x402、Coinbase CDP、Stripe Privy、预算控制和观测。它不是提出新概念，而是把 agent 支付真正塞进云平台执行栈里，开发者不必自己拼装所有支付零件。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cross-sectional">
+        <h2>横向分析</h2>
+        <p>如果把 AI agent 支付当成一个独立产品来找竞品，会看花。因为它现在不是一条单层赛道，而是一组同时演进的技术和制度模块。更准确的横向切法，不是问“谁和谁一模一样”，而是问“谁在同一个问题上交出了不同路线图”。今天最主流的分法，大致可以拆成五派。</p>
+
+        <div class="scenario-grid">
+          <div class="scenario">
+            <strong>卡网络派</strong>
+            Visa、Mastercard。目标是把现有全球支付与风控网络延长到代理时代。
+          </div>
+          <div class="scenario">
+            <strong>开放协议派</strong>
+            Google AP2、Stripe/OpenAI ACP。目标是定义 agent、商户、支付方之间共用的交易语言。
+          </div>
+          <div class="scenario">
+            <strong>HTTP 原生派</strong>
+            Coinbase x402。目标是让支付直接长进请求响应协议，适配 API、MCP、内容和微支付。
+          </div>
+          <div class="scenario">
+            <strong>银行编排派</strong>
+            Payman。目标是让 AI 动钱时继承银行级政策、审计、审批和账户控制。
+          </div>
+          <div class="scenario">
+            <strong>身份钱包派</strong>
+            Skyfire、Nevermined。目标是给 agent 一个可验证身份、可限权钱包与程序化消费能力。
+          </div>
+        </div>
+
+        <h3>一、卡网络派：Visa 与 Mastercard 在保守世界里做最激进的延伸</h3>
+        <p>Visa Intelligent Commerce 和 Mastercard Agent Pay 最大的优势，是它们不需要重新教育世界“什么是支付”。卡组织天生拥有发卡、收单、争议处理、认证、风控、商户覆盖这些现成制度资产。对大商户、银行、监管者而言，这条路线最容易获得心理安全感，因为它不是要推翻一切，而是让代理拿着受控的支付凭证，继续跑在已有轨道上。</p>
+        <p>这条路线的价值尤其体现在高客单价、消费者权益敏感、需要强争议处理的场景。机票、酒店、零售购物、订阅管理、日常消费，这些交易本来就高度依赖卡网络的消费者保护机制。代理如果真要代表用户买东西，最后往往仍得落到一个被广泛接受的商户支付网络上。Visa 与 Mastercard 明白这一点，所以它们真正护住的不是“支付按钮”，而是“最终授权与责任中心”。</p>
+        <p>但短板也明显。第一，这一派继承了传统支付轨的成本结构和流程复杂度，不适合密度极高、金额极小的机器调用。第二，它天然更擅长 B2C 商户支付，不擅长 agent 之间的高频服务交换。第三，它要真正跑通，还得让商户、发卡方、AI 平台、设备认证、风控引擎同时配合，落地速度不会像协议派那样轻巧。</p>
+        <p>用户视角上，这条路线的真实吸引力不是“多酷”，而是“我敢不敢把卡交给代理”。大平台要想说服普通用户放手，卡组织品牌与限权控制会比技术词汇更有说服力。换句话说，卡网络派卖的是安全感和责任框架，而不是开发者快感。</p>
+
+        <h3>二、开放协议派：Google AP2 与 Stripe/OpenAI ACP 在争“语言层”</h3>
+        <p>AP2 与 ACP 表面上都在讲协议，实则各自押注的重点不同。Google AP2 更像多方互操作标准，想协调代理、商户、支付提供方、钱包、认证机制这些角色怎么交换授权与交易上下文。它的野心是当 agentic commerce 的“公共语法”。ACP 则更贴近实际商户成交链路，强调商户只要做一次集成，就能被多个 AI agent 渠道消费，同时保留商品、品牌和订单控制权。</p>
+        <p>这类协议派的最大优点，是它们看穿了一个趋势：未来最稀缺的不是又一个支付 SDK，而是跨 agent 平台、跨商户系统、跨钱包和支付方法的共同接口。如果每个 AI 助手都要单独和每个商户谈接入，市场根本长不起来。协议层一旦站住，就有机会成为 agent 时代的“结算前主路由”。</p>
+        <p>Stripe 和 OpenAI 之所以危险，在于它们不只写 spec，还手握两端资源。Stripe 在商户、结算、税务、风控、tokenized credential 上有深积累；OpenAI 在流量与代理入口上有分发优势。Google 的 AP2 则试图靠开放与联盟做广覆盖。两种打法都很合理：一个是“先有大场景再推协议”，一个是“先拉生态共识再做场景”。</p>
+        <p>短板在于，协议很容易成为“每个人都支持、但没人彻底依赖”的中间层。只要核心执行权还掌握在支付轨道或超级入口手里，协议层的议价能力就不一定稳。它最怕的不是技术失败，而是被上游入口和下游支付轨同时弱化成适配层。</p>
+
+        <h3>三、HTTP 原生派：x402 在最像互联网的地方重写支付</h3>
+        <p>x402 是目前最有“工程美感”的路线。因为它承认一件事：大量 agent 支付根本不是购物，而是请求付费资源。比如买一次数据接口调用、调用一次 MCP 工具、下载一篇被 paywall 限制的内容、让另一个 agent 执行一步服务。这样的交易不需要购物车、不需要品牌页面、不需要复杂 UI，它需要的是一个机器看得懂、可以自动完成、费用足够低的协议握手。</p>
+        <p>x402 把支付嵌进 HTTP 流程，因此在开发者心智里极顺。服务返回 402，客户端拿支付要求，生成支付证明，重试请求。这个过程与 API 访问控制天然兼容，特别适合微支付和按调用计费。AWS AgentCore Payments 在 2026 年直接把它纳入托管基础设施，恰恰说明这条路线已经从“加密圈酷协议”变成“云平台愿意接的生产能力”。</p>
+        <p>它的强项也决定了它的局限。x402 很适合机器消费，却不天然擅长消费者权益复杂、退款纠纷繁琐、履约链很长的实体电商。它更像为 agent economy 中的原子交易设计，而不是为高摩擦 B2C 购物设计。第二，它很依赖稳定币钱包和链上/链边清算机制，这会让部分传统金融机构和大型商户在合规和会计处理上保持谨慎。</p>
+        <p>开发者社区对这条路线普遍有好感，原因很实际：它减少账户创建、减少订阅绑定、减少人工对账，也终于让“pay-per-request”从商业口号变成协议现实。可商户和监管端对它的接受速度，大概率会慢于开发者端的热情。</p>
+
+        <h3>四、银行编排派：Payman 把“AI 能动钱”翻译成“银行敢上线”</h3>
+        <p>Payman 的价值不在于提出最酷的新协议，而在于它把一个银行高管最担心的问题摆到台面上：如果客户说“帮我付账单”“把钱挪到够交房租”，AI 能理解是一回事，系统是否能在既有账户体系、既有政策引擎、既有合规框架里执行，是另一回事。它卖的不是 agentic checkout，而是 agentic money movement。</p>
+        <p>这条路线尤其适合银行、信用社、金融机构、企业财务这些高责任场景。它不追求让 agent 成为一个完全独立的经济体，而是让 agent 成为既有金融账户体系里的可控操作员。政策验证、审批状态、审计日志、权限边界、既有 rails 复用，是其天然卖点。对真正拿大额资金做操作的机构来说，这些比“开放协议是否优雅”重要得多。</p>
+        <p>短板也很清楚。第一，它不够开放，开发者生态和标准外溢能力有限；第二，它更像纵深落地的 enterprise infra，不像消费互联网那样容易形成爆发式网络效应；第三，它的增长速度大概率取决于金融机构采纳周期，而这通常很慢。但慢不代表不重要。恰恰相反，最先承担真实责任的场景，往往最先定义行业底线。</p>
+
+        <h3>五、身份钱包派：Skyfire 与 Nevermined 在补“agent 作为客户”的底层人格</h3>
+        <p>Skyfire 和 Nevermined 很像同一时代的不同侧切。Skyfire 更强调 agent identity、KYA、付款令牌、服务发现和“让 agent 成为可验证客户”；Nevermined 更强调 agent 服务的计费、注册、订阅、按调用结算和 monetization。两者共同点是，它们都把 agent 当成经济主体，而不是支付表单前的自动脚本。</p>
+        <p>这条路线的强处在于，能天然适配 AI 服务市场、MCP 工具、开发者经济和 agent-to-agent 交易。尤其 Nevermined 把“谁在给谁付费、按什么规则计费、如何把服务本身变成可交易资产”说得很彻底。Skyfire 则更像在回答“一个没有护照和银行卡的 agent，怎样被真实世界识别、放行和收费”。</p>
+        <p>这派的问题，在于它们很可能卡在“对开发者很有吸引力，对传统商户不够直观”这道坎上。身份、钱包、KYA、programmatic access 对 AI infra 团队很有意义，但对普通零售商户来说未必是第一优先级。它们更容易先在 agent 原生经济里做深，再向更大的支付世界外扩。</p>
+
+        <h3>当前格局：不是一家独大，而是多层并行</h3>
+        <p>所以，AI agent 支付今天更像一个多层堆栈，而不是一条单通道赛道。卡网络派决定它能否进入主流消费；协议派决定跨平台扩张效率；HTTP 原生派决定 agent economy 的边际交易成本；银行编排派决定高责任资金动作能否被机构采纳；身份钱包派决定 agent 能否被视作真正客户。</p>
+        <p>这也是为什么“谁会赢”现在还太早。不同层级完全可能同时活下去，并且互相嵌套。一个用户也许在 ChatGPT 里购物，前面跑 ACP，底层走 Stripe/卡网络；另一个研究 agent 也许通过 AgentCore 调 x402 付费 API；再另一个银行助手则由 Payman 之类的系统在受控政策下操作传统账户。未来不是一个协议吃掉全部，而更可能是谁把自己推成默认胶水层，谁就拿到最大价值。</p>
+      </section>
+
+      <section id="comparison-table">
+        <h2>核心对比汇总</h2>
+        <div class="comparison-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>对比维度</th>
+                <th>卡网络派<br>Visa / Mastercard</th>
+                <th>开放协议派<br>AP2 / ACP</th>
+                <th>HTTP 原生派<br>x402</th>
+                <th>银行编排派<br>Payman</th>
+                <th>身份钱包派<br>Skyfire / Nevermined</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>核心问题</td>
+                <td>让代理交易继续跑在受监管、可争议处理的全球支付网络上。</td>
+                <td>让代理、商户、支付方之间说同一种交易语言，降低多边集成成本。</td>
+                <td>让机器请求资源时顺手完成支付，适配 API / MCP / 内容微支付。</td>
+                <td>让 AI 真正动钱时仍满足银行级规则、审计、审批和责任要求。</td>
+                <td>让 agent 拥有可验证身份、钱包和按调用消费能力，成为“第一类客户”。</td>
+              </tr>
+              <tr>
+                <td>技术路线</td>
+                <td>延展卡网络、令牌化、认证、发卡收单关系。</td>
+                <td>开放协议 + 商户后台对接 + AI 平台分发。</td>
+                <td>HTTP 402 握手 + 稳定币支付证明 + 重新请求。</td>
+                <td>政策引擎 + 钱包/账户控制 + 资金动作编排。</td>
+                <td>KYA / 钱包 / 使用量计费 / 代理注册和服务发现。</td>
+              </tr>
+              <tr>
+                <td>典型场景</td>
+                <td>消费购物、旅行、订阅管理、需要退款争议的高价值交易。</td>
+                <td>AI 内嵌购物、商户接入多代理渠道、平台级 agentic commerce。</td>
+                <td>按次调用模型、数据、内容、Agent-to-Agent 服务购买。</td>
+                <td>账单支付、转账、账户分析、银行或企业财务助手。</td>
+                <td>代理购买 API、注册服务、代理计费、AI 服务市场变现。</td>
+              </tr>
+              <tr>
+                <td>核心优势</td>
+                <td>信任强、商户接受度高、责任链成熟、最适合主流消费者场景。</td>
+                <td>互操作潜力大，能放大生态网络效应，减少点对点适配。</td>
+                <td>协议干净、开发者友好、适合高频低额微支付。</td>
+                <td>最符合机构合规逻辑，便于真正上线动钱功能。</td>
+                <td>最贴近 agent 原生经济，能够把身份、付费、授权合成一个执行单元。</td>
+              </tr>
+              <tr>
+                <td>明显短板</td>
+                <td>成本结构重，微支付不经济，落地依赖多方协调。</td>
+                <td>协议权力未必稳，容易被入口或支付轨弱化成适配层。</td>
+                <td>对复杂消费者保护和长履约链支持不足，传统机构接受度有限。</td>
+                <td>开放生态弱，扩张速度受金融机构采购周期制约。</td>
+                <td>对传统零售商户吸引力不如卡网络直观，容易先困在 infra 圈层。</td>
+              </tr>
+              <tr>
+                <td>生态锁定程度</td>
+                <td>高。依附现有卡网络与商户收单体系。</td>
+                <td>中。理论开放，但仍受平台与商户双边力量影响。</td>
+                <td>中低。协议开放，但钱包和结算提供方会形成新锁定。</td>
+                <td>高。深接银行和账户系统，切换成本大。</td>
+                <td>中。开发者集成灵活，但身份、钱包和目录网络会形成粘性。</td>
+              </tr>
+              <tr>
+                <td>学习曲线</td>
+                <td>对商户熟悉，对 agent 开发者较重。</td>
+                <td>对平台和商户适中，对协议实现方较高。</td>
+                <td>对工程团队友好，对传统支付团队有认知迁移成本。</td>
+                <td>对金融团队最自然，对通用开发者较重。</td>
+                <td>对 AI infra 团队自然，对传统支付团队需要重新理解。</td>
+              </tr>
+              <tr>
+                <td>生产可靠性</td>
+                <td>成熟度最高，但 agent 端规则还在补。</td>
+                <td>取决于上下游执行质量，标准本身仍在演进。</td>
+                <td>协议简洁，但稳定币、钱包和商户落地面仍在扩张。</td>
+                <td>在封闭机构场景里可靠性最高，开放网络里扩展性待验证。</td>
+                <td>在 agent 原生场景增长快，但跨主流支付世界的稳定性仍在建设。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="insights">
+        <h2>横纵交汇洞察</h2>
+        <p>把纵轴和横轴叠在一起看，会发现今天 AI agent 支付的竞争位置，其实是被前史深深塑形的。为什么卡组织一上来就强调 trusted agent、令牌化、passkeys？因为它们继承的是“支付必须可追责”的旧秩序。为什么 x402 能引起开发者兴奋？因为互联网几十年来一直没有把支付写进协议。为什么 Payman 会强调政策验证和审计日志？因为只要进入银行与企业财务世界，解释性和责任性永远先于“智能”。为什么 Skyfire、Nevermined 会围绕身份和钱包搭系统？因为 agent 要成为经济主体，先得被当成主体看见。</p>
+        <p>换句话说，今天每一条路线的优势，都能追溯到它诞生时选择服务哪一类世界。卡网络派服务的是高信任、高争议责任、高商户覆盖世界，所以它天然强在 B2C 主流消费；x402 服务的是高频、低额、接口化、机器消费世界，所以它天然强在 API 和 agent-to-agent 交易；银行编排派服务的是政策优先于体验的机构世界，所以它强在审计与上线；身份钱包派服务的是 agent 原生经济，所以它强在“让 agent 本身成为客户”。</p>
+
+        <div class="insight-grid">
+          <div class="insight-card">
+            <strong>判断一：赛道真正争的不是付款能力，而是“谁定义合法代理”</strong>
+            <p>支付转账本身越来越商品化。真正稀缺的是授权格式、身份证明、额度边界、责任映射和争议处理。谁能定义一个被广泛接受的合法代理模型，谁才更可能成为默认入口。</p>
+          </div>
+          <div class="insight-card">
+            <strong>判断二：未来不是单一支付网，而是“多层支付堆栈”</strong>
+            <p>用户在 ChatGPT 中购物、agent 自动购买 API、企业助手调拨资金，这三类交易的风险结构和客单价完全不同，不会被一种轨道统一吃掉。最终更可能是卡轨、协议轨、链上微支付轨并存。</p>
+          </div>
+          <div class="insight-card">
+            <strong>判断三：协议层会成为分水岭，但未必独享价值</strong>
+            <p>AP2、ACP、x402 都在争语义层主导权。可协议一旦成功，也可能被上游入口和下游支付轨吸走利润。协议层要想不被工具化，必须同时掌握开发者分发或商户接入的一端。</p>
+          </div>
+          <div class="insight-card">
+            <strong>判断四：银行与卡组织不会消失，只会把 agent 收编进规则系统</strong>
+            <p>很多人把 agent 支付想成“稳定币替代一切”。更可能的现实是，高责任场景继续依赖成熟金融轨，低额高频场景才更偏向 x402 式原生协议。新世界不是把旧世界推翻，而是把旧秩序改写进新接口。</p>
+          </div>
+        </div>
+
+        <h3>竞品的纵向差异，怎样塑造了今天的横向位置</h3>
+        <p>Visa 和 Mastercard 的起点是“如何让陌生人之间的大规模支付被信任”，所以它们天然会把 agent 看成需要被认证和限权的新型持卡人。Stripe 与 OpenAI 的起点则是“如何让商户和流量入口高效成交”，所以 ACP 一开始就围绕商户控制权、支付凭证与 AI 对话界面闭环来设计。Google 的 AP2 出发点更偏生态互通，于是它要解决的是角色之间的共同语义。Coinbase 的 x402 来自开发者和 internet-native payment 的问题意识，所以它绕过表单，直插请求层。Payman 的起点是银行与资金动作，所以它把 AI 当成受政策约束的操作接口。Skyfire 与 Nevermined 的起点是 agent 原生经济，所以它们最在意的是 agent 的身份与可结算性。</p>
+
+        <h3>今天的优势，背后都有历史根源；今天的短板，也一样</h3>
+        <p>卡组织的优势是信任和覆盖，根源在几十年积累的收单、发卡与争议体系；它们的短板是成本重和灵活度差，也同样源于这套体系。x402 的优势是轻、快、机器友好，根源在它从 HTTP 协议问题出发；它的短板是消费者复杂权益保护薄，也因为它从来不是为传统零售 checkout 长出来的。Payman 的优势是银行敢用，短板是扩散慢；Skyfire 与 Nevermined 的优势是贴近 agent 原生经济，短板是离主流零售和大商户还有距离。每条路线都不是偶然长成今天这样，而是被最初解决的问题一路雕刻出来的。</p>
+
+        <h3>未来三种剧本</h3>
+        <h4>最可能的剧本：分层共存，入口与协议分离</h4>
+        <p>主流消费型 agent 支付由 OpenAI、Google、卡组织、Stripe 这类大平台和支付网络推动；开发者侧、高频低额调用由 x402、Skyfire、Nevermined 之类 agent-native 基础设施承接；银行与企业资金动作则由 Payman 一类编排层吃掉。多个标准并存，但各自在自己的风险带上形成事实标准。</p>
+
+        <h4>最危险的剧本：入口垄断，协议沦为附庸</h4>
+        <p>如果超级 AI 入口和大型支付公司形成强绑定，商户为了拿流量只能接指定协议和指定支付凭证，开放协议会名义开放、实质附庸。这样市场增长会很快，但创新空间会被入口层吸干，agent 支付变成下一代平台抽佣系统。</p>
+
+        <h4>最乐观的剧本：代理成为互联网的一等经济主体</h4>
+        <p>开放协议成熟，KYA / policy / payment proof 形成跨平台标准，用户能在不同 AI 助手之间携带身份、预算和授权；商户一次接入即可服务多个代理；API、内容、工具、商户商品都可按需被 agent 直接购买。那时支付不再是网页最后一步，而会像 DNS、OAuth 一样，成为互联网默认能力。</p>
+
+        <div class="quote">我的判断是，2026 到 2027 年决定胜负的，不会是谁“最先让 AI 下单成功”，而是谁最先把“授权边界 + 身份可信 + 支付执行 + 责任回溯”做成开发者和商户都愿意长期依赖的默认组合。</div>
+      </section>
+
+      <section id="sources">
+        <h2>信息来源</h2>
+        <ol class="sources">
+          <li><a href="https://usa.visa.com/about-visa/newsroom/press-releases.release.21361.html" target="_blank" rel="noopener">Visa｜Find and Buy with AI: Visa Unveils New Era of Commerce</a>（2025-04-30）</li>
+          <li><a href="https://www.mastercard.com/news/press/2025/april/mastercard-unveils-agent-pay-pioneering-agentic-payments-technology-to-power-commerce-in-the-age-of-ai/" target="_blank" rel="noopener">Mastercard｜Mastercard unveils Agent Pay</a>（2025-04-29）</li>
+          <li><a href="https://www.coinbase.com/developer-platform/discover/launches/x402/" target="_blank" rel="noopener">Coinbase｜Introducing x402: a new standard for internet-native payments</a>（2025-05-06）</li>
+          <li><a href="https://www.coinbase.com/en-gb/developer-platform/products/x402" target="_blank" rel="noopener">Coinbase｜x402 product overview</a></li>
+          <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/announcing-agents-to-payments-ap2-protocol" target="_blank" rel="noopener">Google Cloud｜Announcing Agent Payments Protocol (AP2)</a>（2025-09-16）</li>
+          <li><a href="https://cloud.google.com/blog/topics/developers-practitioners/agent-factory-recap-can-you-do-my-shopping" target="_blank" rel="noopener">Google Cloud｜Agent Factory Recap: Can you do my shopping?</a></li>
+          <li><a href="https://stripe.com/newsroom/news/stripe-openai-instant-checkout" target="_blank" rel="noopener">Stripe｜Stripe powers Instant Checkout in ChatGPT and releases ACP codeveloped with OpenAI</a>（2025-09-29）</li>
+          <li><a href="https://openai.com/blog/buy-it-in-chatgpt/" target="_blank" rel="noopener">OpenAI｜Buy it in ChatGPT: Instant Checkout and the Agentic Commerce Protocol</a>（2025-09-29）</li>
+          <li><a href="https://docs.stripe.com/agentic-commerce" target="_blank" rel="noopener">Stripe Docs｜Agentic commerce</a></li>
+          <li><a href="https://skyfire.xyz/skyfire-launches-identity-and-payments-for-autonomous-ai-agents/" target="_blank" rel="noopener">Skyfire｜Identity and Payments for Autonomous AI Agents</a>（2025-06-26）</li>
+          <li><a href="https://docs.skyfire.xyz/docs/getting-started" target="_blank" rel="noopener">Skyfire Docs｜Getting started</a></li>
+          <li><a href="https://docs.skyfire.xyz/docs/kyapay-tokens" target="_blank" rel="noopener">Skyfire Docs｜KYA+Pay Tokens</a></li>
+          <li><a href="https://paymanai.com/about-us" target="_blank" rel="noopener">Payman AI｜About us</a></li>
+          <li><a href="https://docs.paymanai.com/api-reference/introduction" target="_blank" rel="noopener">Payman Docs｜API Reference</a></li>
+          <li><a href="https://docs.paymanai.com/api-reference/endpoint/send-payment" target="_blank" rel="noopener">Payman Docs｜Send Payment</a></li>
+          <li><a href="https://nevermined.app/" target="_blank" rel="noopener">Nevermined｜Agentic Payments Platform</a></li>
+          <li><a href="https://docs.nevermined.app/" target="_blank" rel="noopener">Nevermined Docs｜Welcome</a></li>
+          <li><a href="https://docs.nevermined.app/docs/development-guide/nevermined-x402" target="_blank" rel="noopener">Nevermined Docs｜Nevermined x402</a></li>
+          <li><a href="https://aws.amazon.com/about-aws/whats-new/2026/04/amazon-bedrock-agentcore-payments-preview/" target="_blank" rel="noopener">AWS｜Amazon Bedrock AgentCore now includes Payments (preview)</a>（2026-05-07）</li>
+          <li><a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments.html" target="_blank" rel="noopener">AWS Docs｜Amazon Bedrock AgentCore payments</a></li>
+          <li><a href="https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/payments-how-it-works.html" target="_blank" rel="noopener">AWS Docs｜How AgentCore payments works</a></li>
+          <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/402" target="_blank" rel="noopener">MDN｜402 Payment Required</a></li>
+          <li><a href="https://corporate.visa.com/content/dam/VCOM/corporate/services/documents/vca-rise-of-agentic-commerce.pdf" target="_blank" rel="noopener">Visa｜The Rise of Agentic Commerce</a>（2025）</li>
+          <li><a href="https://www.mckinsey.com/~/media/mckinsey/business%20functions/quantumblack/our%20insights/the%20agentic%20commerce%20opportunity%20how%20ai%20agents%20are%20ushering%20in%20a%20new%20era%20for%20consumers%20and%20merchants/the-agentic-commerce-opportunity-how-ai-agents-are-ushering-in-a-new-era-for-consumers-and-merchants_final.pdf" target="_blank" rel="noopener">McKinsey｜The agentic commerce opportunity</a></li>
+        </ol>
+        <p class="footer-note">说明：本报告优先采用官方公告、官方文档、云平台文档与支付公司一手材料。对于行业判断与结构化结论，属于基于上述来源的综合推断，不等同于任何单一公司的官方立场。</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const tocShell = document.getElementById('tocShell');
+    const tocToggle = document.getElementById('tocToggle');
+    const tocPanel = document.getElementById('tocPanel');
+
+    tocToggle.addEventListener('click', function (event) {
+      event.stopPropagation();
+      tocShell.classList.toggle('open');
+    });
+
+    tocPanel.addEventListener('click', function (event) {
+      if (event.target.tagName === 'A') {
+        tocShell.classList.remove('open');
+      }
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!tocShell.contains(event.target)) {
+        tocShell.classList.remove('open');
+      }
+    });
+
+    function toggleDetail(node) {
+      node.classList.toggle('expanded');
+    }
+  </script>
+</body>
+</html>

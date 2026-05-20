@@ -1,5 +1,11 @@
 [
   {
+    "title": "AI Agent 支付",
+    "slug": "aipay",
+    "date": "2026-05-20",
+    "summary": "从 HTTP 402、x402、卡组织、开放协议到代理身份钱包的系统性研究，聚焦 agent 为什么终于开始真正花钱。"
+  },
+  {
     "title": "Hyperliquid 与 HYPE",
     "slug": "hyperliquid",
     "date": "2026-05-19",
