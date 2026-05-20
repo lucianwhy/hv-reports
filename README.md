@@ -6,10 +6,10 @@
 2. 放生成这些报告时使用的 `hv-analysis` skill
 
 仓库地址：  
-[https://github.com/lucian-why/hv-reports](https://github.com/lucian-why/hv-reports)
+[https://github.com/lucianwhy/hv-reports](https://github.com/lucianwhy/hv-reports)
 
 报告站点地址：  
-[https://lucian-why.github.io/hv-reports/](https://lucian-why.github.io/hv-reports/)
+[https://lucianwhy.github.io/hv-reports/](https://lucianwhy.github.io/hv-reports/)
 
 ## 仓库结构
 
@@ -59,10 +59,10 @@ hv-reports/
 ## hv-analysis skill 在哪里
 
 GitHub 页面地址：  
-[https://github.com/lucian-why/hv-reports/tree/main/skills/hv-analysis](https://github.com/lucian-why/hv-reports/tree/main/skills/hv-analysis)
+[https://github.com/lucianwhy/hv-reports/tree/main/skills/hv-analysis](https://github.com/lucianwhy/hv-reports/tree/main/skills/hv-analysis)
 
 直接下载地址（Raw）：  
-[https://raw.githubusercontent.com/lucian-why/hv-reports/main/skills/hv-analysis/SKILL.md](https://raw.githubusercontent.com/lucian-why/hv-reports/main/skills/hv-analysis/SKILL.md)
+[https://raw.githubusercontent.com/lucianwhy/hv-reports/main/skills/hv-analysis/SKILL.md](https://raw.githubusercontent.com/lucianwhy/hv-reports/main/skills/hv-analysis/SKILL.md)
 
 ## 怎么下载这个 skill
 
@@ -72,7 +72,7 @@ GitHub 页面地址：
 
 打开 Raw 地址后保存为 `SKILL.md`：
 
-`https://raw.githubusercontent.com/lucian-why/hv-reports/main/skills/hv-analysis/SKILL.md`
+`https://raw.githubusercontent.com/lucianwhy/hv-reports/main/skills/hv-analysis/SKILL.md`
 
 然后放到你本地的 skill 目录里，比如：
 
@@ -82,7 +82,7 @@ GitHub 页面地址：
 ### 方式 2：克隆整个仓库
 
 ```bash
-git clone https://github.com/lucian-why/hv-reports.git
+git clone https://github.com/lucianwhy/hv-reports.git
 ```
 
 克隆后 skill 路径在：
@@ -138,10 +138,10 @@ hv-reports/skills/hv-analysis/SKILL.md
 
 `hv-analysis` 产出 HTML 后，如果用户明确同意部署，默认发布到这个固定仓库，不要再猜目标地址：
 
-- GitHub 仓库：`https://github.com/lucian-why/hv-reports`
-- Clone 地址：`https://github.com/lucian-why/hv-reports.git`
-- Pages 首页：`https://lucian-why.github.io/hv-reports/`
-- 单篇报告 URL 模板：`https://lucian-why.github.io/hv-reports/<slug>/`
+- GitHub 仓库：`https://github.com/lucianwhy/hv-reports`
+- Clone 地址：`https://github.com/lucianwhy/hv-reports.git`
+- Pages 首页：`https://lucianwhy.github.io/hv-reports/`
+- 单篇报告 URL 模板：`https://lucianwhy.github.io/hv-reports/<slug>/`
 
 ## 本地 HTML 默认放哪里
 

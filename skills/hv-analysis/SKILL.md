@@ -414,16 +414,16 @@ HTML文件命名为 `[研究对象名称]_横纵分析报告.html`。
 - **未经用户明确同意，不自动部署**
 - 用户同意后，再执行 GitHub 部署动作
 - 默认目标仓库为公开仓库 `hv-reports`
-- 仓库 GitHub 地址固定为：`https://github.com/lucian-why/hv-reports`
-- 仓库 clone 地址固定为：`https://github.com/lucian-why/hv-reports.git`
-- GitHub Pages 首页固定为：`https://lucian-why.github.io/hv-reports/`
+- 仓库 GitHub 地址固定为：`https://github.com/lucianwhy/hv-reports`
+- 仓库 clone 地址固定为：`https://github.com/lucianwhy/hv-reports.git`
+- GitHub Pages 首页固定为：`https://lucianwhy.github.io/hv-reports/`
 - 默认托管方式为 **GitHub Pages**
 - 默认路径形式为 **单仓库 + 每篇报告一个子路径**
 
 ### 部署约定
 
 - 仓库根目录为站点首页，用于展示全部报告列表
-- 单篇报告线上 URL 形式固定为：`https://lucian-why.github.io/hv-reports/<slug>/`
+- 单篇报告线上 URL 形式固定为：`https://lucianwhy.github.io/hv-reports/<slug>/`
 - 每篇报告发布到一个独立 slug 路径，例如：
   - `brain-computer-interface/`
   - `openai/`
@@ -462,9 +462,9 @@ HTML文件命名为 `[研究对象名称]_横纵分析报告.html`。
    - 写清晰 commit message
    - 推送到 `origin/main`
 9. 返回结果时必须同时给出
-   - GitHub 仓库地址：`https://github.com/lucian-why/hv-reports`
-   - Pages 首页：`https://lucian-why.github.io/hv-reports/`
-   - 单篇报告地址：`https://lucian-why.github.io/hv-reports/<slug>/`
+   - GitHub 仓库地址：`https://github.com/lucianwhy/hv-reports`
+   - Pages 首页：`https://lucianwhy.github.io/hv-reports/`
+   - 单篇报告地址：`https://lucianwhy.github.io/hv-reports/<slug>/`
 
 ### 报告与仓库双向更新规则
 
