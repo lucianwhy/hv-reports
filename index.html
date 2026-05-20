@@ -25,7 +25,9 @@
 
   <script>
     async function loadReports() {
-      const response = await fetch('./reports.json');
+      const response = await fetch(`./reports.json?v=${Date.now()}`, {
+        cache: 'no-store'
+      });
       const reports = await response.json();
       const grid = document.getElementById('report-grid');
       const count = document.getElementById('report-count');
