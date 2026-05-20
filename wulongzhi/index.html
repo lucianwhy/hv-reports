@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>乌龙指 - 横纵分析法深度研究报告</title>
+  <style>
+    :root {
+      --title: #1a5276;
+      --subtitle: #1e8449;
+      --text: #2c3e50;
+      --muted: #607286;
+      --line: #2e86c1;
+      --paper: #f7fbfd;
+      --card: rgba(255, 255, 255, 0.93);
+      --border: rgba(26, 82, 118, 0.14);
+      --shadow: 0 18px 60px rgba(18, 53, 77, 0.12);
+      --serif: "Copernicus", "Tiempos Headline", "Cormorant Garamond", "EB Garamond", Georgia, serif;
+      --sans: "Styrene B", "StyreneB", Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "WenQuanYi Micro Hei", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      color: var(--text);
+      line-height: 1.85;
+      background:
+        radial-gradient(circle at top left, rgba(46, 134, 193, 0.10), transparent 26%),
+        radial-gradient(circle at top right, rgba(30, 132, 73, 0.10), transparent 30%),
+        linear-gradient(180deg, #f4fafc 0%, #fbfcfd 45%, #f6f8fa 100%);
+    }
+    a { color: var(--title); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .toc-shell {
+      position: fixed;
+      top: 18px;
+      left: 18px;
+      z-index: 20;
+    }
+    .toc-toggle {
+      border: 1px solid rgba(26, 82, 118, 0.20);
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--title);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font: 600 13px var(--sans);
+      letter-spacing: 0.05em;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 30px rgba(26, 82, 118, 0.10);
+      cursor: pointer;
+    }
+    .toc-panel {
+      width: 270px;
+      margin-top: 10px;
+      padding: 16px 16px 12px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.96);
+      border: 1px solid rgba(26, 82, 118, 0.12);
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .toc-shell.open .toc-panel { display: block; }
+    .toc-panel h3 {
+      margin: 0 0 10px;
+      color: var(--title);
+      font: 700 18px var(--serif);
+    }
+    .toc-panel a {
+      display: block;
+      padding: 7px 0;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 58px 24px 88px;
+    }
+    .content {
+      width: min(880px, 100%);
+      margin: 0 auto;
+    }
+    .cover {
+      position: relative;
+      overflow: hidden;
+      padding: 92px 58px 66px;
+      border-radius: 34px;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.96), rgba(243,249,252,0.93)),
+        linear-gradient(135deg, rgba(46, 134, 193, 0.12), rgba(30, 132, 73, 0.08));
+      box-shadow: var(--shadow);
+    }
+    .cover::before,
+    .cover::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .cover::before {
+      width: 280px;
+      height: 280px;
+      top: -120px;
+      right: -80px;
+      background: radial-gradient(circle, rgba(46, 134, 193, 0.18), transparent 70%);
+    }
+    .cover::after {
+      width: 220px;
+      height: 220px;
+      bottom: -110px;
+      left: -60px;
+      background: radial-gradient(circle, rgba(30, 132, 73, 0.16), transparent 70%);
+    }
+    .kicker {
+      position: relative;
+      z-index: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--subtitle);
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .cover h1 {
+      position: relative;
+      z-index: 1;
+      margin: 16px 0 10px;
+      text-align: center;
+      color: var(--title);
+      font: 700 clamp(38px, 5vw, 58px) var(--serif);
+    }
+    .subtitle {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      text-align: center;
+      color: var(--subtitle);
+      font: 600 21px var(--sans);
+    }
+    .meta {
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 24px auto 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .divider {
+      width: 132px;
+      height: 2px;
+      margin: 24px auto 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(46,134,193,0), rgba(46,134,193,0.9), rgba(30,132,73,0.9), rgba(30,132,73,0));
+    }
+
+    section {
+      margin-top: 36px;
+      padding: 38px 42px;
+      border-radius: 28px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 42px rgba(26, 74, 106, 0.08);
+    }
+    h2 {
+      margin: 0 0 18px;
+      color: var(--title);
+      font: 700 34px var(--serif);
+    }
+    h3 {
+      margin: 28px 0 12px;
+      color: var(--title);
+      font: 700 24px var(--serif);
+    }
+    h4 {
+      margin: 22px 0 10px;
+      color: var(--subtitle);
+      font: 700 18px var(--sans);
+    }
+    p {
+      margin: 12px 0;
+      font-size: 16px;
+      text-align: justify;
+    }
+    .lead {
+      font-size: 18px;
+      color: #244864;
+    }
+    .quote {
+      margin: 22px 0;
+      padding: 18px 20px 18px 22px;
+      border-left: 3px solid var(--title);
+      border-radius: 0 16px 16px 0;
+      background: rgba(26, 82, 118, 0.05);
+      color: #35566f;
+    }
+
+    .chips,
+    .compare-grid,
+    .insight-grid {
+      display: grid;
+      gap: 14px;
+    }
+    .chips {
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      margin-top: 20px;
+    }
+    .chip,
+    .card {
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(241,247,251,0.92));
+      border: 1px solid rgba(46, 134, 193, 0.12);
+    }
+    .chip strong,
+    .card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--title);
+      font-size: 15px;
+    }
+    .timeline {
+      position: relative;
+      margin-top: 20px;
+      padding-left: 28px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 7px;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(46,134,193,0.24), rgba(46,134,193,0.92), rgba(30,132,73,0.45));
+    }
+    .timeline-node {
+      position: relative;
+      margin-bottom: 18px;
+      padding-left: 22px;
+      cursor: pointer;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -1px;
+      top: 8px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 4px solid var(--line);
+      box-shadow: 0 0 0 6px rgba(46,134,193,0.08);
+    }
+    .timeline-card {
+      padding: 18px 20px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.97);
+      border: 1px solid rgba(46,134,193,0.12);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .timeline-node:hover .timeline-card {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 34px rgba(35, 88, 125, 0.10);
+    }
+    .timeline-date {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--subtitle);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .timeline-card h3 {
+      margin: 0 0 6px;
+      font-size: 22px;
+    }
+    .timeline-summary { margin: 0; color: #3c6078; }
+    .timeline-detail {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.25s ease, margin-top 0.25s ease;
+    }
+    .timeline-node.expanded .timeline-detail {
+      max-height: 380px;
+      margin-top: 12px;
+    }
+    .compare-grid,
+    .insight-grid {
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      margin-top: 18px;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+      border-radius: 20px;
+      border: 1px solid rgba(26, 82, 118, 0.12);
+    }
+    table {
+      width: 100%;
+      min-width: 800px;
+      border-collapse: collapse;
+      background: rgba(255,255,255,0.97);
+    }
+    thead th {
+      background: var(--title);
+      color: #fff;
+      padding: 16px 14px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    tbody td {
+      padding: 16px 14px;
+      border-top: 1px solid rgba(26,82,118,0.10);
+      vertical-align: top;
+      font-size: 14px;
+    }
+    tbody tr:nth-child(odd) { background: rgba(246,250,252,0.94); }
+    tbody tr:hover { background: rgba(233,244,250,0.95); }
+    .sources { padding-left: 18px; }
+    .sources li { margin: 10px 0; }
+    .footer-note {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    @media (max-width: 900px) {
+      .page { padding: 78px 16px 72px; }
+      .cover, section { padding: 30px 22px; border-radius: 24px; }
+      h2 { font-size: 30px; }
+      .toc-shell { top: 12px; left: 12px; }
+      .toc-panel { width: min(82vw, 270px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="toc-shell" id="tocShell">
+    <button class="toc-toggle" id="tocToggle" type="button">目录</button>
+    <nav class="toc-panel" id="tocPanel">
+      <h3>乌龙指</h3>
+      <a href="#definition">一句话定义</a>
+      <a href="#longitudinal">纵向分析</a>
+      <a href="#timeline">关键时间轴</a>
+      <a href="#cross-sectional">横向分析</a>
+      <a href="#comparison-table">核心对比汇总</a>
+      <a href="#insights">横纵交汇洞察</a>
+      <a href="#sources">信息来源</a>
+    </nav>
+  </div>
+
+  <div class="page">
+    <main class="content">
+      <header class="cover">
+        <div class="kicker">wulongzhi / hv-analysis</div>
+        <h1>乌龙指</h1>
+        <p class="subtitle">从错单事故史，到“捡乌龙指”策略的国际视角</p>
+        <p class="meta">研究时间：2026 年 5 月 20 日｜所属领域：市场微观结构 / 风控 / 流动性事件交易｜研究对象类型：概念与市场现象</p>
+        <div class="divider"></div>
+      </header>
+
+      <section id="definition">
+        <h2>一句话定义</h2>
+        <p class="lead">“乌龙指”不是简单的手抖。它是电子市场里一个很残酷的瞬间：输入错误、风控缺口、流动性真空、撮合规则、撤单权限与事后追责，全部在几秒钟内撞到一起。</p>
+        <p>市场喜欢把乌龙指讲成一个戏剧化段子，什么“多敲了两个零”“卖一手输成卖一亿”。但真正重要的，不是笑话本身，而是它暴露出来的市场结构。为什么一个人的错单能砸穿整个欧洲股指？为什么有些错单能撤，有些不能撤？为什么有人真能捡到便宜，有人捡到了最后又被交易所作废？为什么公开世界里谈“捡乌龙指”的，多半不是高频程序员，而是微盘股、资源股、薄流动性市场的博主和价值投资者？</p>
+        <p>这份报告的主线就沿着这几个问题走。纵轴部分，重建历史上那些关键乌龙指时刻，看清市场是怎么一步步把“错单事故”制度化、规则化的。横轴部分，则把国际视角里几种公开出现过的“捡乌龙指”思路拆开：谁在讲，在哪种市场里讲，靠什么逻辑成立，又在哪些地方会失效。</p>
+        <div class="chips">
+          <div class="chip"><strong>核心命题</strong>乌龙指本质上是流动性与风控的压力测试。</div>
+          <div class="chip"><strong>关键分界</strong>不是“有没有错单”，而是“错单能否穿透防线并进入真实成交”。</div>
+          <div class="chip"><strong>策略真相</strong>公开世界里所谓“捡乌龙指”，大多不是拼手速，而是长期挂低价限价单、吃薄流动性失衡。</div>
+          <div class="chip"><strong>2026 结论</strong>主流市场越来越难捡；真正还常见的机会，更多留在微盘、矿业、小币种、盘后和深度稀薄市场。</div>
+        </div>
+      </section>
+
+      <section id="longitudinal">
+        <h2>纵向分析</h2>
+        <p>乌龙指这个词流行起来，很大程度上是电子交易时代的产物。电话喊单时代当然也有错单，但那时候错误更像柜台事故，扩散速度慢，修正空间大，很多问题在撮合之前就能被人肉拦住。真正让乌龙指变成一个独立的市场现象的，是撮合自动化、DMA 接入、算法执行、跨市场联动和毫秒级传播。错误不再只是“输错了”，而是“输错之后能不能在整个生态系统里被一层层放大”。</p>
+
+        <h3>第一阶段：错单一直存在，但还没变成结构性威胁</h3>
+        <p>早年的证券市场对错单并不陌生。交易所和券商长期都有“clearly erroneous”“out-trade”“error trade”这类说法。背后意思很朴素：如果某一笔成交明显偏离市场价格，且原因是人为或系统错误，交易所可以启动复核甚至撤销。但问题在于，这些规则长期带有很强的人治色彩。不同交易所、不同品种、不同时间段，处理尺度常常不一致。市场平静的时候这不太显眼，一到波动期就会放大成制度问题。</p>
+        <p>乌龙指之所以在 2000 年代中后期突然开始占据媒体头条，不只是因为交易员更粗心了，而是因为市场结构彻底换了。自动撮合让错误不再需要经过很多层人工确认；跨市场套利让一个地方的异常价格会迅速传到别处；算法执行又会把一个本来可控的失误拆成大量子单，瞬间投向多个交易场所。于是错单从局部意外，慢慢长成系统性事件的引信。</p>
+
+        <h3>第二阶段：2005 年 Mizuho / J-Com，把“乌龙指”钉进全球金融记忆</h3>
+        <p>历史上最经典、也最具教学意义的案例，仍然是 2005 年 12 月 8 日日本 Mizuho Securities 在 J-Com 上市首日犯下的那笔错单。原本想卖的是 1 股、价格 610,000 日元；实际下出去的是 610,000 股、价格 1 日元。这个错误之所以经典，不只是数字离谱，而是它同时暴露了三个层面的制度缺口。</p>
+        <p>第一，前端输入设计本身就不够抗错。一个本该在 UI 层、数量约束层、流通股校验层被反复拦截的指令，居然能直接进系统。第二，交易所撤单与风控响应不够强。当错误被发现后，撤单没有立刻成功，造成了更大连锁损害。第三，市场参与者会在制度允许范围内迅速“合法套利”。J-Com 的流通盘很小，错单却巨大，于是很多人不是看基本面，而是在看能否趁错单形成的价差与交割扭曲里吃到一口。</p>
+        <p>这件事的真正后果，不只是 Mizuho 自己亏钱。它强迫交易所、券商、监管者重新面对一个现实：在电子市场里，错误不是私人失误，而是公共事件。只要错误足够大，它就不再只是犯错者和对手盘之间的事，而是整个市场秩序是否还能被信任的问题。</p>
+
+        <h3>第三阶段：2008 到 2011，规则从“事后解释”转向“事前防错”</h3>
+        <p>2008 年金融危机之后，市场大幅波动本来就频繁，错单的破坏力被进一步放大。美国 SEC 在 2009 年推进 clearly erroneous 统一规则，就是这个背景。它的用意很清楚：不同交易所不能再各玩各的，至少要有一套更客观的标准来判断哪些成交可以被打回去。注意这一步的意义很微妙。它不是为了让大家更好地“捡漏”，而是为了让市场知道哪些漏根本不算数。</p>
+        <p>2010 年 5 月 6 日的美国闪电崩盘，把这个问题推到极致。当天市场暴跌后，最早在媒体上传播的一个解释就是“是不是有人 fat finger 了一个巨大卖单”。但随后 SEC 与 CFTC 的调查结论很关键：没有证据显示是所谓 fat finger 单独引爆了那次崩盘。这个结论本身就很重要，因为它把大家从“找一个粗心交易员背锅”的叙事里拽出来，逼着市场承认真正的问题是流动性退潮、算法互动和结构性脆弱。</p>
+        <p>更重要的是，2010 之后美国市场开始加速推进两类制度修补。第一类是 Limit Up-Limit Down 这类价格带机制，尽量不让离谱成交先发生再说。第二类是去掉 stub quotes、强化市场接入前风险控制、建立更统一的错单取消标准。翻译成人话就是：以前市场默认“先成交、再善后”，后来慢慢改成“尽量别让这种成交先发生”。</p>
+
+        <h3>第四阶段：2014 年日本 67.78 万亿日元误单，提醒大家“险些发生”也足够可怕</h3>
+        <p>2014 年 10 月，日本市场又出现了一次极具象征性的 near miss。42 只股票上突然出现总额 67.78 万亿日元的错误订单，其中包括相当于丰田流通股巨大比例的单子。好消息是，这次大部分订单在成交前被撤掉了，没有演化成 2005 年那样的真正灾难。坏消息是，它提醒所有人：哪怕规则修了很多，错误输入和极端订单仍然可能冒出来，而且规模可能比当年更大。</p>
+        <p>这类“险些成交”的事件有个很有意思的后果。它们不像 J-Com 那样留下清晰的财富转移，但它们强化了市场对 pre-trade risk controls 的依赖。因为一旦大家意识到“这次只是运气好没成交”，就会更愿意接受更严苛的拦截规则。某种意义上，真正改变制度的，不只是死人最多的事故，也包括那些差一点出事的瞬间。</p>
+
+        <h3>第五阶段：2018 年三星证券“幽灵股”，把乌龙指从价格事故升级成“资产凭空生成”事故</h3>
+        <p>2018 年韩国三星证券的事故很特别。它不是普通意义上的“输错价格或数量”，而是系统把现金分红误发成了巨量股票，导致市场上短时间内出现 28 亿股并不存在的“幽灵股”。后来部分员工还把这些股卖掉了。这个案例之所以重要，是因为它告诉你，乌龙指并不总是手动输错价，它也可能是后台数据映射、企业行为处理和权限控制失败的结果。</p>
+        <p>三星证券事件把问题推得更深：如果系统能凭空造出错误资产，市场究竟是在交易价格，还是在交易数据库状态？它让监管者开始更严肃地看待中后台系统完整性，而不只是前端下单风控。对“捡乌龙指”策略的人来说，这类事件的启发也不一样。你面对的可能不是一个简单的流动性失衡，而是一个交易所和监管层最后可能会整笔重写的异常状态。也就是说，便宜不一定真属于你。</p>
+
+        <h3>第六阶段：2022 年 Citigroup 欧洲错卖，把“一个人敲错字段”升级成“整套控制失灵”</h3>
+        <p>2022 年 5 月 2 日 Citigroup 在欧洲市场造成的短时闪崩，是现代乌龙指的标准样本。根据 FCA 2024 年 Final Notice，交易员原本想卖掉约 5800 万美元的一篮子股票，却把数值输进了错误字段，最终生成了名义规模 4440 亿美元的 basket。即便中间有部分 hard block 和 soft warning，仍有 14 亿美元卖单真实落地，并在多个欧洲交易所执行，导致多个指数数分钟内剧烈下挫。</p>
+        <p>这个案例的精髓在于，监管结论没有把问题简化为“某交易员胖手指”。FCA 写得很清楚：真正的问题是 primary controls 缺失或失效，警报太多、界面设计糟糕、监控团队没有及时升级、算法执行把本来可拦住的错误持续送进市场。也就是说，现代乌龙指越来越少被理解成单点事故，越来越多被理解成控制链条的系统性失败。</p>
+
+        <h3>第七阶段：从事故史里长出来的一个悖论</h3>
+        <p>到 2026 年，主流市场的乌龙指并没有消失，但它的“可被捡到的程度”明显下降了。规则越来越偏向事前阻断，错单取消标准越来越明确，价格带、交易暂停、stub quote 清理、接入前风险控制，都在提高市场免疫力。可另一面，市场碎片化、盘后交易、跨市场联动、薄流动性尾部品种、加密和小盘股，又持续制造新的真空地带。</p>
+        <p>这就解释了一个表面矛盾：乌龙指作为媒体事件还在，但公开世界里真正靠“捡乌龙指”长期吃饭的人并不多。因为最肥的那类纯技术性错价，往往要么被风控挡掉，要么事后被 bust；剩下可交易的机会，多数出现在薄流动性资产里，而这类机会更像纪律型挂单与价值判断的结合，不像电影里那种一秒钟天降横财。</p>
+      </section>
+
+      <section id="timeline">
+        <h2>关键时间轴</h2>
+        <div class="timeline">
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2005.12</span>
+              <h3>Mizuho / J-Com 错单成全球样板</h3>
+              <p class="timeline-summary">“1 股 610,000 日元”输成“610,000 股 1 日元”，乌龙指第一次以全球级市场事故的面目进入公众视野。</p>
+              <div class="timeline-detail"><p>这起事件暴露了前端输入设计、交易所撤单机制和交割处理三重缺口。它让市场第一次直观看到：一个下单错误，足以从局部操作事故升级为公共市场事件。</p></div>
+            </div>
+          </div>
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2009.10</span>
+              <h3>SEC 统一 clearly erroneous 规则</h3>
+              <p class="timeline-summary">美国开始把错单取消标准客观化、跨交易所统一化，减少“能不能打回去”这件事的随意性。</p>
+              <div class="timeline-detail"><p>这一步不是为了鼓励捡漏，而是为了降低极端行情中市场参与者对成交结果的不确定感。乌龙指开始从新闻词汇变成制度对象。</p></div>
+            </div>
+          </div>
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2010.05 - 2011.04</span>
+              <h3>闪电崩盘推翻“全怪乌龙指”的偷懒解释</h3>
+              <p class="timeline-summary">2010 调查未找到 fat finger 证据，随后 SEC 推出 LULD、stub quote 清理与更强接入风控。</p>
+              <div class="timeline-detail"><p>这一阶段最大的认知变化是：乌龙指不再被视作唯一元凶，而是被重新放回流动性、算法和市场结构共同作用的框架里分析。</p></div>
+            </div>
+          </div>
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2014.10</span>
+              <h3>日本 67.78 万亿日元误单险些成灾</h3>
+              <p class="timeline-summary">42 只股票出现巨额错误订单，幸而多数在成交前撤销，证明“差点出事”也足以推动制度升级。</p>
+              <div class="timeline-detail"><p>事件说明规则虽已加强，但极端输入仍可能穿透前端。Near miss 本身就足以让交易所和券商更愿意接受更严的 pre-trade 风控。</p></div>
+            </div>
+          </div>
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2018.04</span>
+              <h3>三星证券“幽灵股”事故</h3>
+              <p class="timeline-summary">乌龙指从“错价格错数量”升级为“系统误发不存在的股票”，问题从前台扩展到中后台资产状态。</p>
+              <div class="timeline-detail"><p>这件事改变了市场对乌龙指的想象：错误未必来自交易员手指，也可能来自企业行为处理、数据映射和权限管理失败。</p></div>
+            </div>
+          </div>
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2022.05 / 2024.05</span>
+              <h3>Citigroup 欧洲错卖与监管定性</h3>
+              <p class="timeline-summary">错字段引发 14 亿美元真实卖单，多国指数短时跳水；FCA 最终定性为控制体系缺陷，不只是个人失误。</p>
+              <div class="timeline-detail"><p>现代乌龙指的关键词不再只是 fat finger，而是 warning overload、control failure、real-time monitoring 失效、算法切单放大等系统问题。</p></div>
+            </div>
+          </div>
+          <div class="timeline-node" onclick="toggleDetail(this)">
+            <div class="timeline-dot"></div>
+            <div class="timeline-card">
+              <span class="timeline-date">2025 - 2026</span>
+              <h3>主流市场更难捡，边缘市场仍有洞</h3>
+              <p class="timeline-summary">规则层更强，主板错价更短命；真正还能“捡”的，更多转移到小盘、盘后、跨市场和加密深度不足场景。</p>
+              <div class="timeline-detail"><p>这也是公开博主策略越来越少谈“神奇捡漏”、越来越多谈“纪律挂单 + 价值判断 + 流动性容忍”的原因。纯手速优势越来越难公开复制。</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="cross-sectional">
+        <h2>横向分析</h2>
+        <p>如果把“乌龙指”横着切开，会发现它至少有两层。第一层是事故层：不同国家、不同市场、不同制度下，乌龙指长什么样。第二层是机会层：面对这种事故，市场里哪些人试图捡，怎么捡，在哪些制度边界内捡。用户这次特别关心的是第二层，所以我把横向分析重点放在“国际视角的捡乌龙指策略地图”。</p>
+
+        <h3>一、先看事故层：日本、美国、韩国、欧洲，各自暴露了什么</h3>
+        <p>日本案例最典型的是“输入错误 + 撤单难 + 交割压力”。Mizuho/J-Com 和 2014 年巨额误单都发生在一个高度电子化、但对错误订单体量特别敏感的环境里。日本市场后来把错误订单取消规则、持股比例阈值、停牌与公告流程写得更清楚，JPX 甚至明确写出：超过 listed shares 30% 的订单系统直接拒绝，超过一定比例会触发确认、暂停撮合、停牌、甚至研究是否取消已成交交易。这说明日本路径的核心，是把乌龙指变成一个“可程序化处理”的异常事件。</p>
+        <p>美国路径更偏市场结构修补。2010 闪电崩盘后，美国监管重点不是追一个胖手指，而是补充 clearly erroneous 规则、LULD、stub quote 清理、market access 风控。这意味着在美国主流股票市场里，单笔离谱错价越来越难长期留在 tape 上。对“捡乌龙指”者来说，这里最大的变量不是有没有错价，而是这笔错价会不会被事后 bust 掉。</p>
+        <p>韩国三星证券路径则说明，乌龙指也可能是“内部资产状态出错”。这种事故会更快触发监管和舆论共振，因为它不是普通价格偏离，而是系统信用问题。对捡漏者而言，这种场景最危险：你以为自己买到的是错误抛售，其实最后整个状态都可能被重置。</p>
+        <p>欧洲 Citi 路径最像现代投行的典型事故：一个字段输错，本来应该在 pre-trade control、hard block、warning design、real-time monitoring 四五层里被拦下，结果被整个链条一起放大。它告诉你，今天真正有杀伤力的乌龙指，往往不是一个人错，而是一整套系统一起配合着把错单送进市场。</p>
+
+        <h3>二、再看机会层：公开世界里，谁在谈“捡乌龙指”</h3>
+        <p>这里先给一个不那么浪漫、但更真实的结论：国际公开世界里，系统化、持续公开讲“捡乌龙指”的博主并不多。原因很简单。第一，最纯粹的错价捕捉通常依赖专有技术、超低延迟或做市权限，真有这类 edge 的人很少公开写。第二，公开市场里能复制的，更多是“吃流动性真空”的纪律挂单法，而不是“看到错单一秒钟冲进去”的影视化桥段。第三，很多明显的乌龙指成交，事后可能被交易所认定为 clearly erroneous，等于白忙一场。</p>
+        <p>所以公开材料里更常见的，不是“我靠 fat finger 日赚百万”，而是三种比较可复制的思路：一类叫 stink bid，二类叫 non-fundamental drop buy，三类叫 valuation-anchored scale-in。它们本质都跟乌龙指有关，但更成熟、更克制，也更接近普通投资者真的能执行的东西。</p>
+
+        <div class="compare-grid">
+          <div class="card">
+            <strong>Dudley Baker / Doug Casey 脉络</strong>
+            核心打法是薄流动性资产长期挂深度低价买单，等 panic selling、错单或流动性空洞把价格打下来。
+          </div>
+          <div class="card">
+            <strong>Ian Cassel / MicroCapClub</strong>
+            核心打法不是盲挂，而是先判断暴跌是不是 business-related。若只是大股东、情绪或 fat-finger seller 砸盘，才敢真接。
+          </div>
+          <div class="card">
+            <strong>Pat McKeough / TSI Network</strong>
+            把“stink bid”从凭感觉升级成估值驱动：先算价值区间，再分批挂单，不试图一把抄底。
+          </div>
+          <div class="card">
+            <strong>隐形第四派：不公开的人</strong>
+            真正的超短“错价狙击”更多在做市、程序化、期权和加密深度策略里，公开博文反而很少讲细。
+          </div>
+        </div>
+
+        <h3>三、Dudley Baker / Doug Casey：最传统、也最像“捡乌龙指”的公开打法</h3>
+        <p>Dudley Baker 在 2009 年 SafeHaven 上写的那篇《Stink Bids - What, Why and How....》，几乎就是公开世界里最接近“捡乌龙指策略说明书”的文本。他直接讲：在 thinly traded 的 junior mining 股票和权证里，可以把买单挂在当前市价下方 25% 到 50%，等 sharp market decline 命中。文章里还明确说，这个思路让他想到 Doug Casey，说明它本来就来自资源股、边缘市场、深度稀薄环境。</p>
+        <p>这个打法的逻辑很朴素：不是预测公司价值突然改变，而是赌一段时间内有人会因为恐慌、误操作或急需流动性，把单子砸到本来没人打算卖的位置。用中文说，就是你不是在买价值洼地，你是在买别人急着逃命时留下的脚印。它跟乌龙指的关系非常近，因为 fat finger 本质上就是一种极端的短时流动性失衡。</p>
+        <p>但 Baker 这套打法有两个前提。第一，你最好已经有 core position。也就是说，这不是给完全不了解标的的人盲抽彩票。第二，标的必须是薄流动性的。深度很厚的大盘股里，你挂 30% 以下的单子，大多数时候一辈子也碰不到；真碰到了，往往不是乌龙指，而是市场真出了大事。</p>
+        <p>它的长处是机械、简单、可长期执行。它的短处也同样明显：一是容易永远挂不到；二是若真成交，你也可能买到一个基本面正在坏掉的东西。换句话说，stink bid 是最像“捡乌龙指”的公众策略，但它同样最容易把“技术性错价”误当成“价值机会”。</p>
+
+        <h3>四、Ian Cassel：不是捡所有暴跌，而是捡“非基本面型暴跌”</h3>
+        <p>Ian Cassel 在 MicroCapClub 上关于 fat finger seller 和 catching falling knives 的几篇文章，其实把这件事推进了一步。他不是单纯说“挂低价单等命中”，而是反复强调一个判断：跌，是 business-related 还是 non-business-related。如果只是某个大股东醒来就要砸仓、某个 illiquid holder 粗暴出货、或者一次 fat finger seller 把价格短暂打穿，那么那一脚踩空就可能是机会；如果跌的是业务、债务、治理或需求本身，那你不是捡乌龙指，而是在接刀。</p>
+        <p>这比 Baker 更成熟，也更接近实战。因为真正的市场里，价格下跌不会贴标签告诉你“我是乌龙指”。你只能通过公司新闻、盘口行为、成交量结构、是否有基本面催化、管理层反馈、市场环境等信息，去判断这到底是短时错价还是 thesis broken。Cassel 的贡献，不在于发明了挂单，而在于把“捡错价”从技术动作升级成一套诊断流程。</p>
+        <p>从策略角度看，Cassel 这一派不是最容易复制的，却可能是最靠谱的。它承认薄流动性市场里确实经常出现 irrational prints，也承认机会窗口很短，但它拒绝把所有异常波动都神化成礼物。公开世界里，真正讲得明白的人，大多都走到了这一步：不是看价格跌得狠不狠，而是看跌得有没有理由。</p>
+
+        <h3>五、Pat McKeough：把“捡乌龙指”驯化成纪律化估值买入</h3>
+        <p>2025 年 TSI Network 的 Pat McKeough 写了一篇《Stink Bids and Mini Tenders in Canada: How to Avoid Lowball Traps and Buy with Discipline》。这篇文章很有意思，因为它代表了另一种国际视角：他承认 stink bid 这个动作存在，但明确警告，若没有估值锚和分批方案，stink bid 仍然只是 hunch wrapped in a limit order。这个说法很到位。</p>
+        <p>McKeough 的版本里，真正有用的不是“挂低价”本身，而是三件事：先用估值算 buy range；再分三档 scale in；同时尊重 liquidity and spread。他甚至把“随机等一根尖刺戳中你”这件事，从投机动作重新包装回了传统价值投资纪律。换句话说，他是把“捡乌龙指”的猎奇感拿掉，只保留对流动性失衡友好的执行方式。</p>
+        <p>这套方法的长处，是更适合普通投资者，也更少依赖运气。短处是收益弹性没那么传奇。你不太会靠它捡到“1 美分买到蓝筹”的新闻级奇迹，但你会更少踩到“本来以为是错单，结果其实是烂公司崩了”的坑。</p>
+
+        <h3>六、为什么真正顶级的“乌龙指狙击”者反而不怎么写博客</h3>
+        <p>这点很关键。公开材料越往上看，越会发现真正的 ultra-short term 错价捕捉者并不爱公开讲细节。原因很简单：这种 edge 通常依赖速度、路由、做市关系、算法、盘口可见性、盘后场景、不同 venue 的错误撤销规则理解，以及对“会不会 bust trade”的细腻判断。一旦公开，edge 迅速衰减；而且很多细节过于接近交易基础设施，不像资源股博客那样适合写成大众文章。</p>
+        <p>所以公众能看到的，更多是“stink bid 文化”。它本质上不是高频 edge，而是耐心 edge。你提前把单子挂好，接受多年无事发生，只等偶尔有人把流动性砸穿。这种 edge 可以公开，因为它很慢、很分散、很难规模化，而且经常会挂空很多年。真正拼速度和规则缝隙的人，则更可能存在于 proprietary desk，而不是 newsletter。</p>
+
+        <h3>七、国际视角下，“捡乌龙指”其实已经从单一招式分化成三套哲学</h3>
+        <p>第一套哲学是 Baker / Casey 这一脉的“深挂单哲学”：世界总会偶尔失衡，你只要先在那儿等。第二套是 Cassel 这一脉的“诊断式接刀哲学”：只有确认不是基本面塌了，才接。第三套是 McKeough 这一脉的“估值纪律哲学”：价格异常可以利用，但利用它的方式必须服从估值与仓位控制。三套方法都在说同一件事，却代表三种完全不同的性格。</p>
+        <p>如果一定要给它们排个现实适用性，我的判断是：在 2026 年的主流股票市场，单纯深挂单的纯“捡乌龙指”打法已经不是最稳；更可持续的，反而是 Cassel 和 McKeough 那种把流动性错位纳入基本面与估值框架里的做法。因为今天最大的风险不是你捡不到，而是你捡到的东西，要么会被 bust，要么根本不是乌龙指，而是市场提前在告诉你有更糟的消息。</p>
+      </section>
+
+      <section id="comparison-table">
+        <h2>核心对比汇总</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>对比维度</th>
+                <th>深挂单派<br>Dudley Baker / Doug Casey 脉络</th>
+                <th>诊断接刀派<br>Ian Cassel / MicroCapClub</th>
+                <th>估值纪律派<br>Pat McKeough / TSI Network</th>
+                <th>隐形狙击派<br>做市 / 程序化 / 盘口团队</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>核心逻辑</td>
+                <td>提前挂远离市价的低买单，等 panic / fat finger / 流动性真空打到你。</td>
+                <td>先判断暴跌是否非基本面，再决定是否强力承接。</td>
+                <td>先估值，再设买入区间与分批计划，把异常波动当执行加速器。</td>
+                <td>利用速度、路由、盘口与错误撤销规则，捕捉极短暂错价。</td>
+              </tr>
+              <tr>
+                <td>适用市场</td>
+                <td>薄流动性资源股、微盘股、权证、小众市场。</td>
+                <td>微盘股、流动性稀薄但信息可验证的公司。</td>
+                <td>中小盘、加拿大市场、价值投资框架内的弱流动性标的。</td>
+                <td>高碎片化市场、盘后、衍生品、加密、做市深度不连续场景。</td>
+              </tr>
+              <tr>
+                <td>优势</td>
+                <td>简单、机械、长期可执行，偶尔能拿到极低成本。</td>
+                <td>最能区分“乌龙指”与“真利空”，减少接烂刀概率。</td>
+                <td>最适合普通投资者，仓位和估值纪律更完整。</td>
+                <td>纯技术 edge 最强，一旦成功收益最陡。</td>
+              </tr>
+              <tr>
+                <td>短板</td>
+                <td>经常挂不到；真成交时也可能买到坏消息驱动的暴跌。</td>
+                <td>依赖判断力与信息速度，不是简单规则能替代。</td>
+                <td>传奇式“捡便宜”机会少，执行更像价值买入而非神奇狙击。</td>
+                <td>门槛极高、细节不透明、公开投资者难复制，且 bust trade 风险大。</td>
+              </tr>
+              <tr>
+                <td>对乌龙指依赖度</td>
+                <td>高。把错单和情绪踩踏都视作潜在成交来源。</td>
+                <td>中。更看重非基本面型失衡，而不只盯错单本身。</td>
+                <td>低到中。乌龙指只是更便宜的执行时点，不是策略核心。</td>
+                <td>极高。很多 edge 就建立在极短错价或深度失衡上。</td>
+              </tr>
+              <tr>
+                <td>最怕什么</td>
+                <td>基本面真的坏了、流动性更差、成交后继续无底洞下跌。</td>
+                <td>误判利空性质，把基本面塌方当成短时错价。</td>
+                <td>估值锚错了，或者分批买入变成持续抄底失败。</td>
+                <td>成交被认定 clearly erroneous、对手盘优先级更高、基础设施延迟。</td>
+              </tr>
+              <tr>
+                <td>普通投资者可复制性</td>
+                <td>中。需要耐心与薄流动性容忍度。</td>
+                <td>中低。需要较强研究能力和情境判断。</td>
+                <td>高。最接近可普及的方法。</td>
+                <td>低。基本不适合公开市场普通人复制。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="insights">
+        <h2>横纵交汇洞察</h2>
+        <p>把历史事故和策略讨论放到一起看，会得出一个很有意思的结论：乌龙指的事故史，基本上就是“捡乌龙指”难度不断上升的历史。越早期，市场越缺规则、越缺统一撤销标准、越缺价格带与接入风控，错单一旦成交，留给对手盘的套利空间越大。越到后期，主流市场越强调先拦截、后成交，事后再辅以 clearly erroneous 和 LULD 机制，于是最纯粹、最戏剧化的“白捡”机会越来越短命。</p>
+
+        <div class="insight-grid">
+          <div class="card">
+            <strong>判断一：乌龙指不只是输入错误，它是市场流动性最诚实的 CT 扫描</strong>
+            <p>同样一笔错单，在深度厚、价格带强、风控密的市场里只是一条报错提示；在深度薄、监控弱、算法多的市场里则可能砸出全球新闻。差别不在手指，而在市场身体素质。</p>
+          </div>
+          <div class="card">
+            <strong>判断二：公开世界里的“捡乌龙指”，本质上已经退化成“吃流动性真空”</strong>
+            <p>真正的 fat-finger sniping 很少公开化。普通投资者可执行的版本，更多是 stink bid、估值挂单、非基本面暴跌承接，而不是拼反应速度。</p>
+          </div>
+          <div class="card">
+            <strong>判断三：2010 以后，主流市场的核心变化不是更少出错，而是更少让你吃到错</strong>
+            <p>错单并未完全消失，但 LULD、stub quote 清理、clearly erroneous、JPX 取消成交规则，让很多潜在“便宜货”在你真正拥有之前就被制度抹平了。</p>
+          </div>
+          <div class="card">
+            <strong>判断四：越公开、越可复制的策略，越依赖研究，不依赖神迹</strong>
+            <p>Baker 靠耐心，Cassel 靠判断，McKeough 靠纪律。真正能长期留下来的，不是“神奇抢单”，而是把流动性失衡纳入价值框架的人。</p>
+          </div>
+        </div>
+
+        <h3>历史如何塑造了今天的策略选择</h3>
+        <p>Mizuho/J-Com 之后，大家第一次意识到错单可以形成巨大的财富转移，于是“捡乌龙指”变成一个真实想象。2010 闪电崩盘之后，大家又意识到很多极端价格其实未必能算数，于是策略开始分流：一部分人转向更边缘、更薄、更少被交易所回滚的市场；另一部分人则放弃神话，转向更慢、更研究导向的估值挂单法。也就是说，事故史直接塑造了策略史。</p>
+        <p>为什么 Dudley Baker / Doug Casey 一脉出现在资源股和薄流动性市场？因为那是规则保护相对弱、深度又真的会断掉的地方。为什么 Cassel 的讨论集中在 microcaps？因为那里大股东、基金赎回、情绪踩踏和 fat finger seller 常常混在一起，最需要判断“跌因”。为什么 Pat McKeough 讲纪律？因为越到今天，普通投资者越不可能靠纯技术差价吃饭，只能把这种偶发失衡吸收到长期买入体系里。</p>
+
+        <h3>优势的历史根源，劣势的历史根源</h3>
+        <p>深挂单派的优势，来自市场曾经长期允许深度真空和离谱成交；它的劣势，也来自今天这种真空越来越常被制度堵住。诊断接刀派的优势，来自现代市场里“错单”和“真利空”越来越难分；它的劣势，则是这要求更高的信息敏感度和自我约束。估值纪律派的优势，在于它适应了后乌龙指时代的规则环境；它的不足，则是不会给人那种一夜暴富的戏剧性满足。换句话说，每套方法的优缺点，都是被它所处的制度时代刻出来的。</p>
+
+        <h3>未来三种剧本</h3>
+        <h4>最可能的剧本：主板越来越难捡，边缘市场继续偶发</h4>
+        <p>美股主板、欧洲大盘、日本主板这类市场会继续强化 pre-trade risk、price bands、错单撤销标准。真正还能定期出现可交易“乌龙指式机会”的，大概率仍是微盘股、盘后交易、加密次级市场、跨市场连接处与极端新闻时点。</p>
+
+        <h4>最危险的剧本：投资者把基本面崩塌误认成乌龙指</h4>
+        <p>公众最常犯的错误，不是错过机会，而是把任何离谱下跌都叫乌龙指。越是在小盘、矿业、生物科技和高杠杆标的里，这个误判越致命。很多看起来像 fat finger 的断崖，其实是信息先于你到达市场。</p>
+
+        <h4>最乐观的剧本：流动性失衡变成纪律化 alpha，而非赌运气</h4>
+        <p>如果普通投资者真想从这个现象里长期受益，最现实的路径不是追逐新闻里的传奇错单，而是建立 watchlist、估值区间、分批挂单、流动性过滤、事件核验流程。那时“捡乌龙指”不再是一门神秘偏门，而只是价值投资在弱流动性市场里的一个执行变体。</p>
+
+        <div class="quote">我的判断是：今天仍然值得学的，不是“哪里会再出现下一个 J-Com”，而是 J-Com 之后这个市场学会了什么，以及普通人还能在哪些缝里，靠耐心和判断而不是幻想，吃到流动性错位留下的面包屑。</div>
+      </section>
+
+      <section id="sources">
+        <h2>信息来源</h2>
+        <ol class="sources">
+          <li><a href="https://www.mizuhogroup.com/binaries/content/assets/pdf/mizuhoglobal/news/2005/12/20051208.pdf" target="_blank" rel="noopener">Mizuho Financial Group｜Share trade of J-COM Co., Ltd. apology release</a>（2005-12-08）</li>
+          <li><a href="https://www.aljazeera.com/news/2005/12/9/224m-typo-shakes-tokyo-exchange" target="_blank" rel="noopener">Al Jazeera｜$224m typo shakes Tokyo exchange</a>（2005-12-09）</li>
+          <li><a href="https://www.cio.com/article/262952/it-organization-tse-faces-suit-over-system-linked-botched-trade.html" target="_blank" rel="noopener">CIO｜TSE Faces Suit Over System-Linked Botched Trade</a></li>
+          <li><a href="https://www.sec.gov/news/press/2009/2009-215.htm" target="_blank" rel="noopener">SEC｜Approves New Exchange Rules for Breaking Clearly Erroneous Trades</a>（2009-10-05）</li>
+          <li><a href="https://www.sec.gov/news/studies/2010/marketevents-report.pdf" target="_blank" rel="noopener">SEC &amp; CFTC｜Findings Regarding the Market Events of May 6, 2010</a>（2010-09-30）</li>
+          <li><a href="https://www.sec.gov/news/testimony/2010/ts051110mls.pdf" target="_blank" rel="noopener">SEC｜Mary Schapiro testimony on the May 6, 2010 market disruption</a>（2010-05-11）</li>
+          <li><a href="https://www.sec.gov/news/press/2011/2011-84.htm" target="_blank" rel="noopener">SEC｜Filing of Limit Up-Limit Down Proposal</a>（2011-04-05）</li>
+          <li><a href="https://www.jpx.co.jp/english/equities/trading/cancel/01.html" target="_blank" rel="noopener">Japan Exchange Group｜Canceling Executed Transactions - Summary of the Rules</a></li>
+          <li><a href="https://www.jpx.co.jp/english/rules-participants/public-comment/detail/d8/b5b4pj0000039q2g-att/b5b4pj0000039rs4.pdf" target="_blank" rel="noopener">Japan Exchange Regulation｜Order Management Guidelines</a></li>
+          <li><a href="https://time.com/3452427/fat-finger-japan-stock/" target="_blank" rel="noopener">Time｜‘Fat Finger’ Error Blamed for $617 Billion Stock Orders Scrapped in Japan</a>（2014-10-01）</li>
+          <li><a href="https://www.theguardian.com/business/2014/oct/01/japanese-trader-380bn-pounds-fat-finger" target="_blank" rel="noopener">The Guardian｜Japanese broker makes £380bn ‘fat finger’ trade</a>（2014-10-01）</li>
+          <li><a href="https://m.investing.com/news/stock-market-news/south-korean-pension-fund-stops-trading-with-samsung-securities-after-fat-finger-error-1386274?ampMode=1" target="_blank" rel="noopener">Reuters｜Samsung Securities 'fat finger' debacle deepens</a>（2018-04-10）</li>
+          <li><a href="https://en.yna.co.kr/view/AEN20180704008700320" target="_blank" rel="noopener">Yonhap｜Samsung Securities fined for 'fat-finger' fiasco</a>（2018-07-04）</li>
+          <li><a href="https://www.fca.org.uk/publication/final-notices/citigroup-global-markets-limited-2024.pdf" target="_blank" rel="noopener">FCA｜Final Notice: Citigroup Global Markets Limited</a>（2024-05-17）</li>
+          <li><a href="https://finance.yahoo.com/news/citi-fined-78-million-european-234137535.html" target="_blank" rel="noopener">Business Insider / Yahoo Finance｜Citi fined over fat-finger trade causing European flash crash</a></li>
+          <li><a href="https://safehaven.com/article/14826/stink-bids---what-why-and-how" target="_blank" rel="noopener">Dudley Baker｜Stink Bids - What, Why and How....</a>（2009-11-04）</li>
+          <li><a href="https://files.caseyresearch.com/archived/wp/media/pdfs/20080103_0801_ABCs_of_Canadian_Stock_Investing.pdf" target="_blank" rel="noopener">Casey Research｜Guide to Investing in Canadian Stocks</a></li>
+          <li><a href="https://microcapclub.com/when-inexperience-is-an-asset/" target="_blank" rel="noopener">Ian Cassel｜When Inexperience is an Asset</a>（2023-08-01）</li>
+          <li><a href="https://microcapclub.com/2023/04/the-art-of-catching-falling-knives/" target="_blank" rel="noopener">Ian Cassel｜The Art of Catching Falling Knives</a>（2023）</li>
+          <li><a href="https://microcapclub.com/when-should-you-average-down/" target="_blank" rel="noopener">Ian Cassel｜When Should You Average Down?</a></li>
+          <li><a href="https://www.tsinetwork.ca/daily-advice/how-to-invest/stink-bids-and-mini-tenders-in-canada-how-to-avoid-lowball-traps-and-buy-with-discipline/" target="_blank" rel="noopener">Pat McKeough｜Stink Bids and Mini Tenders in Canada</a>（2025-08-29）</li>
+        </ol>
+        <p class="footer-note">说明：历史事故部分优先采用监管文件、交易所规则、公司公告和 Reuters 级媒体材料。关于“哪些博主分享捡乌龙指策略”，公开世界里真正系统化分享的人并不多，且不少内容本质上是在谈薄流动性市场中的 stink bid 与非基本面型暴跌承接，而不只是狭义 fat finger 狙击。</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const tocShell = document.getElementById('tocShell');
+    const tocToggle = document.getElementById('tocToggle');
+    const tocPanel = document.getElementById('tocPanel');
+
+    tocToggle.addEventListener('click', function (event) {
+      event.stopPropagation();
+      tocShell.classList.toggle('open');
+    });
+
+    tocPanel.addEventListener('click', function (event) {
+      if (event.target.tagName === 'A') {
+        tocShell.classList.remove('open');
+      }
+    });
+
+    document.addEventListener('click', function (event) {
+      if (!tocShell.contains(event.target)) {
+        tocShell.classList.remove('open');
+      }
+    });
+
+    function toggleDetail(node) {
+      node.classList.toggle('expanded');
+    }
+  </script>
+</body>
+</html>
