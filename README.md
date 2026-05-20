@@ -134,6 +134,39 @@ hv-reports/skills/hv-analysis/SKILL.md
 3. 发布到 `hv-reports`
 4. 通过 GitHub Pages 对外分享
 
+## 发布新报告怎么部署
+
+`hv-analysis` 产出 HTML 后，如果用户明确同意部署，默认发布到这个固定仓库，不要再猜目标地址：
+
+- GitHub 仓库：`https://github.com/lucian-why/hv-reports`
+- Clone 地址：`https://github.com/lucian-why/hv-reports.git`
+- Pages 首页：`https://lucian-why.github.io/hv-reports/`
+- 单篇报告 URL 模板：`https://lucian-why.github.io/hv-reports/<slug>/`
+
+### 标准发布步骤
+
+1. 在本地 `hv-reports` 工作副本中创建报告目录：`<slug>/`
+2. 将报告 HTML 放到：`<slug>/index.html`
+3. 更新根目录 `reports.json`
+4. 若这次也修改了 `hv-analysis` 规则，同步更新 `skills/hv-analysis/SKILL.md`
+5. 若仓库使用说明受影响，同步更新本 README
+6. `git add` 只添加本次相关文件
+7. 提交并推送到 `origin/main`
+8. 返回三个链接：
+   - 仓库地址
+   - Pages 首页
+   - 单篇报告链接
+
+### 提交范围原则
+
+- 不要覆盖或回滚仓库里无关的未提交改动
+- 发布普通新报告时，最小变更集通常只有：
+  - `reports.json`
+  - `<slug>/index.html`
+- 只有在方法论或部署规范变化时，才额外更新：
+  - `skills/hv-analysis/SKILL.md`
+  - `README.md`
+
 ## 适合谁用
 
 适合这些场景：
