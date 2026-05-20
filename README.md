@@ -143,11 +143,25 @@ hv-reports/skills/hv-analysis/SKILL.md
 - Pages 首页：`https://lucian-why.github.io/hv-reports/`
 - 单篇报告 URL 模板：`https://lucian-why.github.io/hv-reports/<slug>/`
 
+## 本地 HTML 默认放哪里
+
+从现在开始，`hv-analysis` 生成的本地 HTML 报告默认优先放在：
+
+`D:\调研`
+
+规则：
+
+- 若目录不存在，先创建
+- 若用户明确指定其他目录，再按用户要求覆盖
+- 最终交付时，优先返回 `D:\调研\<文件名>.html`
+- 如果后续还要部署到 GitHub Pages，本地源文件也优先从这个目录取
+
 ### 标准发布步骤
 
 1. 在本地 `hv-reports` 工作副本中创建报告目录：`<slug>/`
 2. 将报告 HTML 放到：`<slug>/index.html`
 3. 更新根目录 `reports.json`
+   - 这一步必须执行，因为 GitHub Pages 首页列表要同步出现新报告
 4. 若这次也修改了 `hv-analysis` 规则，同步更新 `skills/hv-analysis/SKILL.md`
 5. 若仓库使用说明受影响，同步更新本 README
 6. `git add` 只添加本次相关文件
