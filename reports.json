@@ -1,5 +1,11 @@
 [
   {
+    "title": "Agent 支付",
+    "slug": "agent-pay",
+    "date": "2026-05-24",
+    "summary": "从 HTTP 402、MCP、x402、AP2、ACP 到 AgentCore Payments 的系统性研究，聚焦机器如何开始合法、可信、低摩擦地消费资源。"
+  },
+  {
     "title": "乌龙指",
     "slug": "wulongzhi",
     "date": "2026-05-20",
