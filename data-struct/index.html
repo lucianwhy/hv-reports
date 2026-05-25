@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据结构 — 横纵分析法深度研究报告</title>
+<style>
+  :root { --pri: #1a5276; --pri-l: #2980b9; --acc: #c0392b; --acc-l: #fadbd8; --bg: #fcfcfc; --card: #fff; --txt: #2c3e50; --txt2: #7f8c8d; --bor: #e8e8e8; --grn: #1e8449; --grn-bg: #eafaf1; --yel-bg: #fef9e7; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: "Styrene B", "StyreneB", Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--txt); line-height: 1.85; font-size: 16px; }
+  h1,h2,h3 { font-family: Copernicus, "Tiempos Headline", "Cormorant Garamond", "EB Garamond", Georgia, serif; }
+  h2 { font-size: 26px; color: var(--pri); margin: 48px 0 18px; padding-top: 28px; border-top: 1px solid var(--bor); }
+  h3 { font-size: 20px; color: #34495e; margin: 28px 0 12px; padding-left: 12px; border-left: 4px solid var(--pri-l); }
+  h4 { font-size: 17px; color: #5d6d7e; margin: 18px 0 8px; }
+  p { margin: 8px 0; }
+  strong { color: var(--pri); }
+  em { color: var(--grn); font-style: normal; }
+
+  /* Layout */
+  .layout { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; }
+
+  /* TOC button */
+  .toc-btn { position: fixed; top: 24px; left: 24px; z-index: 999; width: 44px; height: 44px; border-radius: 22px; background: var(--pri); color: #fff; border: none; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,.15); transition: .2s; }
+  .toc-btn:hover { background: var(--pri-l); transform: scale(1.05); }
+  .toc-panel { position: fixed; top: 76px; left: 24px; z-index: 998; background: #fff; border-radius: 8px; box-shadow: 0 4px 24px rgba(0,0,0,.12); padding: 16px 0; min-width: 220px; max-height: 70vh; overflow-y: auto; display: none; }
+  .toc-panel.open { display: block; }
+  .toc-panel a { display: block; padding: 8px 24px; color: var(--txt); text-decoration: none; font-size: 14px; transition: .15s; border-left: 3px solid transparent; }
+  .toc-panel a:hover, .toc-panel a.active { background: #f0f7fb; color: var(--pri); border-left-color: var(--pri-l); }
+
+  /* Cover */
+  .cover { text-align: center; padding: 80px 0 48px; border-bottom: 2px solid var(--pri-l); margin-bottom: 32px; }
+  .cover h1 { font-size: 40px; color: var(--pri); letter-spacing: 2px; margin-bottom: 12px; }
+  .cover .sub { font-size: 20px; color: var(--grn); margin-bottom: 16px; font-weight: 500; }
+  .cover .meta { font-size: 14px; color: var(--txt2); }
+  .divider { width: 60px; height: 4px; background: var(--acc); margin: 20px auto; border-radius: 2px; }
+
+  /* Card */
+  .card { background: var(--card); border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,.05); padding: 20px 24px; margin: 14px 0; }
+
+  /* Quote */
+  blockquote { border-left: 3px solid var(--pri); background: #f0f7fb; padding: 14px 20px; margin: 16px 0; border-radius: 0 6px 6px 0; font-style: italic; color: #555; }
+  blockquote strong { color: var(--pri); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; margin: 14px 0; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,.05); }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: 14px; }
+  th { background: var(--pri); color: #fff; padding: 10px 14px; text-align: left; white-space: nowrap; font-size: 13px; }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--bor); vertical-align: top; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  tr:hover td { background: #f0f7fb; }
+
+  /* Formula */
+  .formula { background: #fdf2f2; border-left: 3px solid var(--acc); padding: 12px 18px; margin: 12px 0; border-radius: 0 6px 6px 0; font-family: "Times New Roman", serif; font-size: 16px; }
+
+  /* Timeline */
+  .timeline { position: relative; padding: 20px 0; margin: 24px 0; }
+  .timeline::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--pri-l); transform: translateX(-50%); }
+  .tl-node { position: relative; margin-bottom: 32px; cursor: pointer; }
+  .tl-node:nth-child(odd) .tl-content { margin-left: calc(50% + 32px); }
+  .tl-node:nth-child(even) .tl-content { margin-right: calc(50% + 32px); text-align: right; }
+  .tl-dot { position: absolute; left: 50%; top: 8px; width: 16px; height: 16px; background: var(--pri-l); border-radius: 50%; transform: translateX(-50%); z-index: 2; border: 3px solid #fff; box-shadow: 0 0 0 2px var(--pri-l); transition: .2s; }
+  .tl-node:hover .tl-dot { background: var(--acc); box-shadow: 0 0 0 2px var(--acc); }
+  .tl-content { padding: 12px 18px; background: #fff; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+  .tl-date { font-size: 13px; color: var(--pri-l); font-weight: 700; margin-bottom: 4px; }
+  .tl-content h3 { margin: 0 0 4px; font-size: 16px; padding: 0; border: none; }
+  .tl-summary { font-size: 14px; color: var(--txt2); margin: 4px 0; }
+  .tl-detail { display: none; font-size: 14px; color: var(--txt); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--bor); line-height: 1.75; }
+  .tl-node.expanded .tl-detail { display: block; }
+
+  /* Highlight */
+  .highlight { background: var(--yel-bg); border: 1px solid #f9e79f; border-radius: 6px; padding: 12px 18px; margin: 12px 0; font-size: 15px; }
+
+  /* Tags */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 12px; font-weight: 600; }
+  .tg-r { background: var(--acc-l); color: var(--acc); }
+  .tg-g { background: var(--grn-bg); color: var(--grn); }
+  .tg-b { background: #dbeafe; color: #1d4ed8; }
+  .tg-o { background: #fef3c7; color: #d97706; }
+
+  /* Source */
+  .source { font-size: 12px; color: var(--txt2); margin-top: 4px; }
+  .source a { color: var(--pri-l); text-decoration: none; }
+  .source a:hover { text-decoration: underline; }
+
+  /* Two col */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 14px 0; }
+  .two-col .col { background: #fff; border-radius: 8px; padding: 18px; box-shadow: 0 1px 6px rgba(0,0,0,.05); }
+
+  /* Sources section */
+  .sources-list { font-size: 14px; }
+  .sources-list li { margin: 6px 0; padding: 4px 0; border-bottom: 1px dotted var(--bor); }
+  .sources-list li:last-child { border-bottom: none; }
+
+  @media (max-width: 768px) {
+    .cover h1 { font-size: 28px; }
+    .toc-btn { top: 12px; left: 12px; width: 38px; height: 38px; }
+    .toc-panel { left: 12px; top: 56px; }
+    .two-col { grid-template-columns: 1fr; }
+    .timeline::before { left: 20px; }
+    .tl-node:nth-child(odd) .tl-content, .tl-node:nth-child(even) .tl-content { margin-left: 48px; margin-right: 0; text-align: left; }
+    .tl-dot { left: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOC -->
+<button class="toc-btn" onclick="document.querySelector('.toc-panel').classList.toggle('open')" title="目录">☰</button>
+<nav class="toc-panel">
+  <a href="#cover">封面</a>
+  <a href="#s1">一、一句话定义</a>
+  <a href="#s2">二、纵向分析 — 从 Knuth 到 LeetCode</a>
+  <a href="#s2-1">&nbsp;&nbsp;2.1 前史：无名的数据结构</a>
+  <a href="#s2-2">&nbsp;&nbsp;2.2 1968：Knuth 的系统化奠基</a>
+  <a href="#s2-3">&nbsp;&nbsp;2.3 1975：Wirth 的公式与 Pascal</a>
+  <a href="#s2-4">&nbsp;&nbsp;2.4 1980s–1990s：中国化的开端</a>
+  <a href="#s2-5">&nbsp;&nbsp;2.5 严蔚敏教材：一代人的集体记忆</a>
+  <a href="#s2-6">&nbsp;&nbsp;2.6 2009–至今：408 与 MOOC 时代</a>
+  <a href="#s3">三、关键时间轴</a>
+  <a href="#s4">四、横向分析 — 教学生态的横切面</a>
+  <a href="#s4-1">&nbsp;&nbsp;4.1 教材维度</a>
+  <a href="#s4-2">&nbsp;&nbsp;4.2 教学平台维度</a>
+  <a href="#s4-3">&nbsp;&nbsp;4.3 学习路径维度</a>
+  <a href="#s5">五、核心对比汇总表</a>
+  <a href="#s6">六、横纵交汇洞察</a>
+  <a href="#s7">七、信息来源</a>
+</nav>
+
+<div class="layout">
+
+<!-- ============ Cover ============ -->
+<header class="cover" id="cover">
+  <h1>数据结构</h1>
+  <div class="divider"></div>
+  <p class="sub">横纵分析法深度研究报告</p>
+  <p class="meta">研究时间：2026年5月 &nbsp;|&nbsp; 所属领域：计算机科学 · 高等教育 &nbsp;|&nbsp; 研究对象类型：概念</p>
+</header>
+
+<!-- ============ S1: Definition ============ -->
+<section id="s1">
+<h2>一、一句话定义</h2>
+<blockquote>
+  <strong>数据结构</strong>是计算机存储、组织数据的方式，它定义了数据元素之间的逻辑关系（一对一、一对多、多对多）以及在这些关系之上的操作集合。它既是一门严谨的数学抽象，也是一门工程技艺 —— 从1968年Knuth将其系统化为一门独立课程以来，它已成为全世界每一所大学计算机专业的必修第一课。
+</blockquote>
+<p>如果非要用一个更短的句子来概括它在计算机教育中的地位：<strong>数据结构是把"会写代码"变成"会写好代码"的那道门槛。</strong></p>
+</section>
+
+<!-- ============ S2: Longitudinal ============ -->
+<section id="s2">
+<h2>二、纵向分析 —— 从 Knuth 到 LeetCode</h2>
+
+<h3 id="s2-1">2.1 前史：无名的数据结构（1940s–1960s）</h3>
+<p>在"数据结构"这个词被发明之前，数据结构就已经存在了。</p>
+<p>1946年，John Mauchly 在一篇关于计算机排序的论文中描述了插入排序 —— 这是目前已知最早的关于排序算法的正式讨论。Knuth 后来在《计算机程序设计艺术》中认定，Mauchly 是第一个发表计算机排序讨论的人。</p>
+<p>与此同时，图灵、冯·诺依曼等人在设计早期计算机体系结构时，已经在实际使用数组、栈（用于子程序调用返回地址的存储）、链表（用于动态内存分配）等概念，但没有人把这些当作一个独立的知识体系来对待。数据结构只是"实现算法时顺手做的事"，散落在各个命题里，没有一个统一的名字。</p>
+<p>1950年代，随着 FORTRAN（1957）和 ALGOL（1958）这两种高级语言的诞生，数组成为第一个被语言层面原生支持的数据结构。ALGOL 60 的块结构和递归机制，让栈的概念从硬件走向了软件。</p>
+<p>到1960年代初，链表已经在 Lisp（1958）中作为核心结构存在了，McCarthy 用 cons 单元构建了所有的数据表达。但即便如此，"数据结构"仍然不是一个被独立教授的科目 —— 它是算法课里的一个子话题。</p>
+
+<h3 id="s2-2">2.2 1968：Knuth 的系统化奠基</h3>
+<p>1962年，24岁的 Donald Knuth 开始了一项野心勃勃的计划：写一本涵盖计算机编程所有重要知识的书。这个计划后来变成了《计算机程序设计艺术》（The Art of Computer Programming，简称 TAOCP），而他最初预计七卷就能完成的工作，至今写到了第四卷。</p>
+<p>1968年，TAOCP 第一卷《基本算法》出版。在这本书里，Knuth 第一次系统地阐述了数据的<strong>逻辑结构</strong>（线性表、树、图）、<strong>存储结构</strong>（顺序存储、链式存储）以及在其上的<strong>基本操作</strong>。这三个维度构的成本数据结构课程至今仍在使用的分析框架。</p>
+<div class="card">
+  <p>Knuth 在 TAOCP 第一卷中规范了以下结构：线性表（包括栈和队列作为特殊线性表）、树（特别是二叉树和树的遍历）、多重链表结构（图的前身）、以及基于数组和链表的存储策略。他的贡献不是"发明"了这些结构 —— 它们在这之前已经被使用了 —— 而是<strong>首次将它们组织成了一门独立、自洽的学科</strong>。</p>
+</div>
+<p>Knuth 还有一个几乎同样重要的贡献：他确立了一种用数学语言描述数据结构的叙述风格。书中那些严谨的伪代码（MIX 汇编语言）、对时间复杂度的形式化分析、以及对算法正确性的证明，为后来的教科书树立了标杆，也定下了这门课"难"的基调。</p>
+
+<h3 id="s2-3">2.3 1975：Wirth 的公式与 Pascal 时代的到来</h3>
+<p>1975年，Pascal 语言的发明者、瑞士计算机科学家 Niklaus Wirth 出版了一本小书，书名只有六个单词，却成为了计算机科学史上被引用最多的陈述之一：</p>
+<div class="formula">
+  <strong>Algorithms + Data Structures = Programs</strong>
+</div>
+<p>Wirth 在书中用 Pascal 语言实现了每一个讨论的数据结构，把"学数据结构"和"写代码"绑在了一起。这种做法在后来的四十多年里成为数据结构教学的标准范式：<strong>用一门教学语言来演示数据结构的实现，让学生既能看懂抽象结构，又能写出具体代码。</strong></p>
+<p>1976年这本书问世后，数据结构的教学在全球范围内进入了一个标准化阶段。1984年，ACM 和 IEEE 联合发布的计算机科学课程指南首次将"数据结构与算法"列为必修核心课程，数据结构正式完成了从"Knuth 的个人项目"到"全球标准"的制度化。</p>
+
+<h3 id="s2-4">2.4 1980s–1990s：中国化的开端</h3>
+<p>中国对数据结构的系统化教学起步于1980年代。1984年，严蔚敏和吴伟民开始着手编写《数据结构》教材，最初是基于 Pascal 语言的版本。这本教材后来经历了从 Pascal 到 C 语言的迁移，最终以清华大学出版社出版的《数据结构（C语言版）》定稿。</p>
+<p>选择 C 语言而不是 Pascal 或后来的 Java，在当时是一个正确但后来变得有争议的决策。C 语言天然支持指针，可以非常直观地展示链表的指针操作、动态内存分配、以及各种链式存储结构。但这也意味着学习数据结构之前必须先学好 C 语言 —— 或者说，学数据结构的痛苦有很大一部分其实是学指针的痛苦。</p>
+<p>1997年，《数据结构（C语言版）》第1版正式出版。这本教材最终成为中国大陆采用率最高的数据结构教材，据不完全统计，累计发行量超过百万册。</p>
+
+<h3 id="s2-5">2.5 严蔚敏教材：一代人的集体记忆</h3>
+<p>严蔚敏的《数据结构》有三个版本：</p>
+<ul>
+  <li><strong>第1版（1997年）</strong>：奠定了整个教材体系的基础，包括 ADT（抽象数据类型）的章节结构、伪代码描述的风格、以及从线性表到排序的八章结构。</li>
+  <li><strong>第2版（2007年）</strong>：双色印刷，更新了大量图表，按教育部计算机科学与技术教学指导委员会的规范调整了知识体系。这也是目前使用最广的版本。</li>
+  <li><strong>第3版（2021年）</strong>：北京林业大学李冬梅教授参与修订，增加了一些现代元素，引入 LeetCode 算法练习题。</li>
+</ul>
+<p>这本教材的评价两极分化严重。在知乎、CSDN 等技术社区中，批评集中在以下几个方面：</p>
+<blockquote>
+  "伪代码不完整，不能直接编译运行"、"代码风格陈旧，变量命名'大写+下划线'不像现代 C 语言"、"对指针的讲解不够深入，导致学生学完链表还是一知半解"、"全书没有一个可运行的完整程序，教学与实战脱节"。
+</blockquote>
+<p>但另一边，它的拥护者认为：<strong>教材的目的不是写"能跑的代码"，而是讲清楚数据结构的设计思想。</strong>严蔚敏教材的最大价值在于逻辑严密 —— 每个 ADT 的定义、每个操作的初始条件和操作结果，都写得非常清楚。这种严谨性在应付期末考试和408考研时，反而成了优势。</p>
+<p>一个有趣的现象是：尽管被广泛批评，它仍然是<strong>考研408数据结构的实际标准</strong>。因为408命题组的知识框架与严蔚敏教材高度一致，历年真题的考点几乎不出这本教材的目录范围。</p>
+
+<h3 id="s2-6">2.6 2009–至今：408统考、MOOC 革命与 LeetCode 时代</h3>
+<p>2009年，中国教育部考试中心开始实施全国硕士研究生入学统一考试计算机学科专业基础综合（简称408）。数据结构占408总分150分中的约31%（约47分），包括11道选择题（22分）和2道综合题（约25分）。</p>
+<p>408对数据结构教学产生了深远影响。一方面，它巩固了数据结构作为"计算机专业最重要的基础课"的地位；另一方面，它也导致了教学的"应试化"倾向 —— 许多高校的教学重点从"理解数据结构的本质"转向了"会做408的题目"。</p>
+<p>2014年，浙江大学陈越教授在中国大学 MOOC 平台上线了《数据结构》慕课课程。这门课以其生动的动画演示、贴近实战的编程练习、以及何钦铭教授的"判题系统"PTA（Programming Teaching Assistant）而闻名，至今累计选课人数超过百万人次，被认定为国家级精品在线开放课程。</p>
+<p>几乎在同一时期，LeetCode（2015年进入中国）、牛客网（2014年上线）等刷题平台迅速崛起。一个全新的学习路径出现了：不再先学教材再做题，而是<strong>直接在刷题中学习数据结构</strong>。这种方式完全打破了"教材 — 课堂 — 考试"的线性路径。</p>
+<p>2010年代中后期，随着 Python 在数据科学领域的爆发，"用 Python 学数据结构"成为一个显著的潮流。Python 内置的 list、dict、set、tuple 等高级数据结构让很多人觉得"不需要自己实现链表了"，但这也引发了新的争论：<strong>不会写链表的人，算真正理解数据结构吗？</strong></p>
+
+<h3>2.7 小结：一条清晰的演化脉络</h3>
+<div class="card">
+  <p>数据结构的演变经历了一个螺旋：<strong>从附属于算法（1940s-1960s）→ Knuth 系统化独立成科（1968）→ Wirth 绑定编程实践（1975）→ 中国标准化教材（1997）→ 408统考固化地位（2009）→ MOOC 和刷题平台去中心化（2014至今）。</strong></p>
+  <p>每一次转折都带来教学范式的变化，但核心矛盾始终存在：<strong>抽象理解与代码实现之间的鸿沟。</strong>严蔚敏的教材偏向抽象理解端，LeetCode 偏向代码实现端，而最好的学习者，通常是在这两端之间反复横跳的那些人。</p>
+</div>
+</section>
+
+<!-- ============ S3: Timeline ============ -->
+<section id="s3">
+<h2>三、关键时间轴</h2>
+<div class="timeline">
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">1946</span>
+      <h3>Mauchly 发表排序算法</h3>
+      <p class="tl-summary">John Mauchly 在论文中描述插入排序 —— 最早的算法文献记录。</p>
+      <div class="tl-detail"><p>虽然没有"数据结构"这个术语，但排序必然涉及数据的组织方式（数组）。这篇论文被 Knuth 认定为计算机排序讨论的起点。当时的主要计算设备是 ENIAC，编程用的是插线板——还谈不上"数据结构的系统研究"。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">1958</span>
+      <h3>Lisp 诞生，链表首次进入语言核心</h3>
+      <p class="tl-summary">John McCarthy 将 cons 单元（即链表结点）作为 Lisp 的基本构造块。</p>
+      <div class="tl-detail"><p>Lisp 用 cons 单元构建了列表和树，是第一个把链表作为"一等公民"的编程语言。同时期 ALGOL 60 引入了递归和块结构，为栈从硬件概念走向软件概念铺平了道路。这两个语言分别在数据结构的不同维度上做了开创性工作。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">1962</span>
+      <h3>Knuth 开始撰写 TAOCP</h3>
+      <p class="tl-summary">24岁的 Knuth 启动了一项改变计算机科学面貌的写作计划。</p>
+      <div class="tl-detail"><p>最初计划写七卷，涵盖计算机编程的所有重要主题。这个计划的宏大程度在今天看来仍然是不可思议的——一个人要写一本"关于编程的百科全书"。五十多年过去了，第四卷还在陆续出版中。但前几卷已经足以奠定数据结构的学科地位。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">1968</span>
+      <h3>TAOCP Vol.1 出版：数据结构的"创世纪"</h3>
+      <p class="tl-summary">Knuth 在《基本算法》中首次系统阐述了数据的逻辑结构、存储结构和操作。</p>
+      <div class="tl-detail"><p>这本书的出版标志着数据结构正式成为一门独立学科。Knuth 奠定了用数学语言描述数据结构的范式，包括伪代码（MIX汇编）描述、时间复杂度分析、算法正确性证明。这套方法论影响了此后所有数据结构教科书。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">1975</span>
+      <h3>Wirth 提出 "Algorithms + Data Structures = Programs"</h3>
+      <p class="tl-summary">Pascal 语言发明者用一句六个词的公式定义了编程的本质。</p>
+      <div class="tl-detail"><p>Wirth 的这本书用 Pascal 语言实现了每一个讨论的数据结构，开创了"用一门教学语言配套数据结构教材"的范式。这个公式至今仍然是计算机科学教材中最常被引用的一句话。它同时确立了一个核心信念：数据结构不是理论课，而是编程课的一部分。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">1984</span>
+      <h3>ACM/IEEE 将 DS 列为必修核心课</h3>
+      <p class="tl-summary">数据结构完成制度化，成为全球计算机专业的通用标准。</p>
+      <div class="tl-detail"><p>ACM和IEEE联合发布的《计算机科学课程指南》首次将"数据结构与算法"列为计算机科学本科教育的必修核心课程。这意味着任何一个经过认证的计算机科学学位项目，都必须包含一门完整的数据结构课程。数据结构的全球标准化由此完成。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">1997</span>
+      <h3>严蔚敏《数据结构（C语言版）》第1版</h3>
+      <p class="tl-summary">中国采用率最高的数据结构教材诞生，数百万计算机学生共同的入门记忆。</p>
+      <div class="tl-detail"><p>从Pascal版转向C语言版的决策被证明是历史性的——C语言与指针的天然结合让链表等结构的教学直观性大幅提升，但也让"学指针"与"学数据结构"的痛苦叠加。这一版本的八章结构（绪论→线性表→栈队列→串/数组/广义表→树→图→查找→排序）成为中国数据结构课程的事实标准。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">2009</span>
+      <h3>408 计算机统考实施</h3>
+      <p class="tl-summary">数据结构占408总分约31%（~47分），考研压力反过来塑造了本科教学。</p>
+      <div class="tl-detail"><p>408统考覆盖数据结构、组成原理、操作系统、计算机网络四门课。数据结构以11道选择题（22分）+2道综合题（约25分）的体量，成为第二大分值科目。高频考点集中在树与二叉树应用、图算法、排序比较、查找算法四大板块。统考的标准化同时带来了教学的应试化——许多学校的数据结构课程从"培养学生编程思维"变成了"帮助学生过408"。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">2014</span>
+      <h3>浙大陈越 MOOC + LeetCode 兴起</h3>
+      <p class="tl-summary">MOOC 打破课堂围墙，刷题平台重塑学习路径——数据结构学习进入去中心化时代。</p>
+      <div class="tl-detail"><p>浙大陈越的MOOC课程以动画演示和PTA判题系统改变了数据结构的教学体验，累计选课人数超过百万。同期LeetCode、牛客网等平台让"学习数据结构"与"准备面试"之间的界限变得模糊。一个全新的学习路径诞生了：直接通过做题来理解数据结构，而不是先看书再做题。这个路径在效率上可能有优势，但深度是否足够，至今仍有争论。</p></div>
+    </div>
+  </div>
+
+  <div class="tl-node" onclick="this.classList.toggle('expanded')">
+    <div class="tl-dot"></div>
+    <div class="tl-content">
+      <span class="tl-date">2021</span>
+      <h3>严蔚敏第3版增加 LeetCode 练习题</h3>
+      <p class="tl-summary">经典教材向刷题时代低头，新增算法练习题试图弥合"学"与"练"的鸿沟。</p>
+      <div class="tl-detail"><p>第3版由北京林业大学李冬梅参与修订，首次引入LeetCode算法练习题。这个细节本身就说明了很多问题——连最传统的教材也不得不承认，"做题"已经成为学习数据结构不可绕过的一环。但新增的练习与传统伪代码之间的风格差异，也进一步凸显了教材面临的身份危机：到底是继续做一本"数学教材"，还是转型为一本"编程教材"？</p></div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ============ S4: Cross-sectional ============ -->
+<section id="s4">
+<h2>四、横向分析 —— 教学生态的横切面</h2>
+
+<h3 id="s4-1">4.1 教材维度：四种流派</h3>
+<p>当前数据结构教材市场可以分为四种清晰的流派：</p>
+
+<h4>流派一：经典教科流派</h4>
+<p><strong>代表：严蔚敏《数据结构（C语言版）》</strong></p>
+<p>这是中国高校的主流选择。特点是<strong>ADT 定义严格、伪代码抽象、应试导向强</strong>。优点在于逻辑严密，考试命中率高；缺点在于代码不能直接运行，与工程实践脱节。这本书像一本数学教材多于像一本编程教材。</p>
+
+<h4>流派二：国际经典流派</h4>
+<p><strong>代表：Cormen《算法导论》、Sedgewick《算法》、Mark Allen Weiss《数据结构与算法分析》</strong></p>
+<p>Cormen 的《算法导论》是英语世界的事实标准，MIT 等顶级院校的指定教材。它覆盖的不是"数据结构"而是"算法"，但数据结构作为算法的基础被深度讨论。Sedgewick 的《算法》更偏重实现，所有代码都可以直接运行。Weiss 的《数据结构与算法分析》在"理论深度"和"代码可运行性"之间取得了最平衡的妥协，他的 C 语言版本（以及后来的 Java 版本）被很多学校用作补充教材。</p>
+
+<h4>流派三：通俗入门流派</h4>
+<p><strong>代表：程杰《大话数据结构》、邓俊辉《数据结构与算法》</strong></p>
+<p>程杰的《大话数据结构》用口语化、幽默化的写法降低了入门门槛，所有示例都配有可运行的 C 语言代码。它的缺点是在理论深度上不如严蔚敏，不足以支撑考研408。邓俊辉的教材（清华大学出版）则走了另一条路 —— 用 C++ 语言，强调面向对象的数据结构设计，配有完整的源代码和在线判题系统。</p>
+
+<h4>流派四：语言绑定流派</h4>
+<p><strong>代表：Goodrich《Data Structures and Algorithms in Java/Python》、各种"用 Python 学数据结构"教程</strong></p>
+<p>这个流派的核心主张是：<strong>数据结构应该用现代高级语言来学习</strong>。Python 版本强调利用内置数据类型和迭代器，减少手动内存管理；Java 版本强调利用 Collections Framework 和泛型。优势是入门快，劣势是学生可能只学会了调用 API，没有理解底层原理。</p>
+
+<div class="two-col">
+  <div class="col">
+    <h4>严蔚敏的优势</h4>
+    <ul>
+      <li>逻辑严密，ADT定义标准</li>
+      <li>与408考研大纲高度吻合</li>
+      <li>教学难度可控，适合大班授课</li>
+      <li>教师有成熟的教学体系可循</li>
+    </ul>
+  </div>
+  <div class="col">
+    <h4>严蔚敏的短板</h4>
+    <ul>
+      <li>伪代码不能运行，学完不会写</li>
+      <li>代码风格陈旧，不符合工程标准</li>
+      <li>缺少现代数据结构（跳表、红黑树讲得不够）</li>
+      <li>与 LeetCode/面试脱节</li>
+    </ul>
+  </div>
+</div>
+
+<h3 id="s4-2">4.2 教学平台维度：三种模式</h3>
+
+<div class="table-wrap">
+<table>
+  <tr><th>平台</th><th>代表课程/产品</th><th>核心模式</th><th>优势</th><th>局限</th></tr>
+  <tr>
+    <td><strong>传统课堂</strong></td>
+    <td>各高校必修课（48学时）</td>
+    <td>教师讲授 + 上机实验</td>
+    <td>系统性强，有师生互动</td>
+    <td>质量高度依赖教师水平</td>
+  </tr>
+  <tr>
+    <td><strong>MOOC 平台</strong></td>
+    <td>浙大陈越（中国大学MOOC）</td>
+    <td>视频 + PTA 自动判题</td>
+    <td>动画演示生动，可反复观看</td>
+    <td>缺少一对一答疑</td>
+  </tr>
+  <tr>
+    <td><strong>刷题平台</strong></td>
+    <td>LeetCode / 牛客网 / AcWing</td>
+    <td>"以题带学"</td>
+    <td>直接面向面试和竞赛</td>
+    <td>系统性不足，概念碎片化</td>
+  </tr>
+</table>
+</div>
+
+<p>浙大陈越的 MOOC 课程是目前中国在线数据结构教育中的标杆。它的核心创新在于两方面：</p>
+<ol>
+  <li><strong>动画演示</strong>：树的遍历、图的 DFS/BFS、排序过程都用动画一步一步展示，这个视觉效果是任何静态教材无法替代的。</li>
+  <li><strong>PTA 判题系统</strong>：学生提交的代码会被自动编译、运行、判分。这个系统解决了传统教学中最大的瓶颈 —— 教师不可能给每个学生的手写代码做编译和运行检查。</li>
+</ol>
+
+<p>LeetCode 与 MOOC 的差异更加本质：MOOC 是"先讲再做"，LeetCode 是"做了再查"。LeetCode 的学习者通常在遇到具体题目时，才知道"哦，这题考的是哈希表"，然后去搜索哈希表的原理。这种"反向学习"效率高、目的性强，但知识结构是碎片化的。</p>
+
+<h3 id="s4-3">4.3 学习路径维度：三条路线并行</h3>
+
+<div class="table-wrap">
+<table>
+  <tr><th>路线</th><th>目标人群</th><th>路径描述</th><th>评价</th></tr>
+  <tr>
+    <td><strong>学院派路线</strong></td>
+    <td>本科生、考研学生</td>
+    <td>教材 → 课堂 → 作业 → 考试 → 408</td>
+    <td>系统完整，但与实际开发距离最远</td>
+  </tr>
+  <tr>
+    <td><strong>实战派路线</strong></td>
+    <td>转行/求职者</td>
+    <td>MOOC → LeetCode → 面试</td>
+    <td>目标明确效率高，但理论基础可能薄弱</td>
+  </tr>
+  <tr>
+    <td><strong>竞赛路线</strong></td>
+    <td>ACM/ICPC 参赛者</td>
+    <td>算法专题 → 洛谷/Codeforces → 比赛</td>
+    <td>技巧最深，但对工程能力的迁移有限</td>
+  </tr>
+</table>
+</div>
+
+<p>一个有趣的现象是：<strong>这三条路线的知识体系高度重叠，但学习顺序和侧重点完全不同。</strong>学院派强调"先理解再实现"，实战派强调"遇到问题再学"，竞赛派强调"在极限条件下用最优解法"。三条路线对应三种完全不同的认知模式，但它们最终需要掌握的核心数据结构列表几乎一样。</p>
+
+<h3>4.4 408考研：考试如何重塑了教学</h3>
+<p>根据近12年408真题的统计分析，数据结构的考查呈现出清晰的分布规律：</p>
+<div class="highlight">
+  <strong>408 数据结构高频考点排名（基于2009-2024真题考频统计）：</strong>
+  <ol>
+    <li><strong>树与二叉树应用</strong> —— 哈夫曼树、二叉排序树、平衡二叉树、堆，选择题和综合题均有考查</li>
+    <li><strong>图的应用</strong> —— 最短路径、最小生成树、拓扑排序、关键路径，综合题高频来源</li>
+    <li><strong>查找</strong> —— 折半查找、哈希表（除留余数法+冲突处理）、二叉排序树的构造和ASL分析</li>
+    <li><strong>内部排序算法的比较与应用</strong> —— 各排序方法的时间复杂度和稳定性对比，选择题和综合题均涉及</li>
+    <li><strong>算法分析</strong> —— 时间复杂度推导、空间复杂度判断</li>
+  </ol>
+</div>
+<p>这个统计数据解释了为什么<strong>树和图在数据结构课程中占据了不成比例的权重</strong> —— 不是因为它们在实际工程中使用最多（实际上哈希表和数组用得多得多），而是因为它们是408最喜欢的出题素材。</p>
+</section>
+
+<!-- ============ S5: Comparison Table ============ -->
+<section id="s5">
+<h2>五、核心对比汇总表</h2>
+
+<h3>教材对比</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>对比维度</th><th>严蔚敏 C语言版</th><th>Cormen 算法导论</th><th>Sedgewick 算法</th><th>程杰 大话数据结构</th></tr>
+  <tr>
+    <td><strong>定位</strong></td>
+    <td>中国本科教材 / 考研408标配</td>
+    <td>英语世界研究生教材 / 算法圣经</td>
+    <td>普林斯顿本科教材 / 代码驱动</td>
+    <td>中文入门读物 / 降低门槛</td>
+  </tr>
+  <tr>
+    <td><strong>语言</strong></td>
+    <td>C语言伪代码</td>
+    <td>类Python伪代码</td>
+    <td>Java 可运行代码</td>
+    <td>C语言可运行代码</td>
+  </tr>
+  <tr>
+    <td><strong>理论深度</strong></td>
+    <td>中等偏深（ADT+复杂度分析）</td>
+    <td>极深（数学证明+摊还分析）</td>
+    <td>中等（侧重应用分析）</td>
+    <td>偏浅（侧重理解概念）</td>
+  </tr>
+  <tr>
+    <td><strong>代码可运行性</strong></td>
+    <td>不可运行（伪代码）</td>
+    <td>不可运行（伪代码）</td>
+    <td>完全可运行</td>
+    <td>大部分可运行</td>
+  </tr>
+  <tr>
+    <td><strong>应试适配度</strong></td>
+    <td><span class="tag tg-g">高度适配408</span></td>
+    <td>适配北美博士资格考试</td>
+    <td>适配北美技术面试</td>
+    <td><span class="tag tg-o">不够考研深度</span></td>
+  </tr>
+  <tr>
+    <td><strong>入门友好度</strong></td>
+    <td>低（需要C/指针基础）</td>
+    <td>极低（需要离散数学基础）</td>
+    <td>中（需要Java基础）</td>
+    <td>高（口语化叙述）</td>
+  </tr>
+  <tr>
+    <td><strong>工程实用性</strong></td>
+    <td>低（代码风格陈旧）</td>
+    <td>中（偏理论）</td>
+    <td>高（可直接用于项目）</td>
+    <td>中（入门后需进阶）</td>
+  </tr>
+</table>
+</div>
+
+<h3>教学平台对比</h3>
+<div class="table-wrap">
+<table>
+  <tr><th>对比维度</th><th>中国大学MOOC（浙大陈越）</th><th>LeetCode</th><th>牛客网</th><th>B站自学</th></tr>
+  <tr>
+    <td><strong>核心优势</strong></td>
+    <td>动画演示+PTA判题系统</td>
+    <td>面试题库最全+讨论区质量高</td>
+    <td>中文生态+企业真题</td>
+    <td>免费+选择丰富</td>
+  </tr>
+  <tr>
+    <td><strong>系统性</strong></td>
+    <td>高（12讲完整覆盖）</td>
+    <td>低（以题为单位碎片化）</td>
+    <td>中（有专项训练）</td>
+    <td>取决于UP主质量</td>
+  </tr>
+  <tr>
+    <td><strong>互动性</strong></td>
+    <td>低（论坛答疑）</td>
+    <td>高（题解讨论区）</td>
+    <td>中（社区较活跃）</td>
+    <td>极低（纯单向）</td>
+  </tr>
+  <tr>
+    <td><strong>应试导向</strong></td>
+    <td>偏教学，不直接面向408</td>
+    <td>偏北美技术面试</td>
+    <td>偏国内招聘笔试</td>
+    <td>多样</td>
+  </tr>
+</table>
+</div>
+</section>
+
+<!-- ============ S6: Insights ============ -->
+<section id="s6">
+<h2>六、横纵交汇洞察</h2>
+
+<h3>6.1 历史如何塑造了当下的竞争位置</h3>
+<p>数据结构今天在中国的形态 —— 一门以 C 语言伪代码教学、被408考研深度绑定、教学与实践之间存在巨大鸿沟的必修课 —— 几乎是纵向历史上每一个关键决策的叠加结果。</p>
+<p>Knuth 在1968年确立的"用数学语言描述数据结构"的传统，为后来的教材定下了"严肃、严谨、偏理论"的基调。Wirth 在1975年将数据结构与 Pascal 绑定，开创了"用教学语言示范"的模式 —— 但这个模式在今天被质疑：用一门已经退出工业界的语言来教数据结构，到底有多少迁移价值？</p>
+<p>中国选择了 C 语言作为教学语言（而非 Java 或 Python），在当时是合理的：C 语言让指针操作变得直观，同时也与嵌入式、操作系统等后续课程兼容。但这个选择也让数据结构的入门门槛提高了很多 —— 学生需要同时克服"理解数据结构"和"驾驭指针"两个难点。</p>
+<p>408统考的实施（2009年）是把双刃剑。它赋予了数据结构无与伦比的学科地位 —— 在中国，没有哪一门计算机课程比数据结构更"事关命运"（考研的分值占比决定了学生的投入意愿）。但这个地位也带来了严重的路径锁定：<strong>教材不敢改、教法不敢动、考点不能超纲。</strong>任何偏离408大纲的创新，都会面临"这不考"的学生质疑。</p>
+
+<h3>6.2 竞品（教材）的纵向对比</h3>
+<p>如果把这四类教材放在时间线上看，它们的起源时间决定了各自的基因：</p>
+<ul>
+  <li><strong>严蔚敏（1997）</strong>诞生于中国计算机教育体系化的年代，基因里刻着"应对统一教学大纲"和"标准化考试"。</li>
+  <li><strong>Cormen（1990年第1版）</strong>诞生于 MIT 研究生课堂，基因里刻着"理论证明"和"学术前沿"。</li>
+  <li><strong>Sedgewick（1983年第1版）</strong>诞生于普林斯顿本科课堂，基因里刻着"用代码讲算法"。最新的 Java 版本是活代码驱动教学的典范。</li>
+  <li><strong>程杰《大话数据结构》（2011）</strong>诞生于博客时代，基因里刻着"让新手读懂"和"降低入门槛"。它不是写给教授看的，是写给那个在深夜对着链表发呆的大学生看的。</li>
+</ul>
+<p>每种教材的基因几乎决定了它们今天的一切特征。严蔚敏的严谨和"不接地气"是同源的 —— 她追求的是概念的纯净性，而这纯净性恰恰依赖于与现实工程的距离。</p>
+
+<h3>6.3 优势与劣势的历史根源</h3>
+<p><strong>严蔚敏教材最大的优势，也是它最大的劣势所在的根源。</strong></p>
+<p>它的优势在于：知识体系完整、逻辑严密、与408高度耦合。这让它在中国高校中几乎不可替代 —— 任何替代教材首先要过的关不是学生喜不喜欢，而是"能不能覆盖408考点"。</p>
+<p>它的劣势在于：代码不可运行、风格陈旧、缺少对现代工程实践的关照。这个劣势的根源是历史性的 —— 1997年设计教材时，并没有 LeetCode、没有 GitHub、没有 Coursera。当时的设计目标是"让教师能讲清楚"和"让学生能应付考试"，而不是"让学生能写出生产级代码"。</p>
+<p>今天对这本教材的很多批评，其实是在用一个新世界的尺子，去量一个旧世界的教材。</p>
+
+<h3>6.4 未来推演：三个剧本</h3>
+
+<div class="card">
+  <h4>剧本一：渐进改良（最可能的剧本）</h4>
+  <p>数据结构教学不会发生革命，但会持续地渐进改进。严蔚敏教材继续迭代（第4版可能配在线判题系统），MOOC 课程与线下课堂的融合加深，C 语言作为教学语言的地位短期内不会被动摇（因为408不换语言）。但越来越多的高校会在"官方教材"之外，推荐学生使用 Coursera / LeetCode 作为并行学习路径。</p>
+  <p><strong>逻辑支撑</strong>：408的存在锁定了教学大纲，MOOC 和刷题平台的兴起是市场行为而非政策行为，两者可以并行不悖。</p>
+</div>
+
+<div class="card" style="margin-top:14px;">
+  <h4>剧本二：赛道切换（最危险的剧本）</h4>
+  <p>如果未来5年内408考纲从 C 语言切换到 Python 或 C++，整个数据结构教学体系将面临一次大地震。严蔚敏教材的根基会被动摇，新教材的编写、教师培训、课程重构都需要时间。短期内教学质量可能下降，大量"只会 Python 不会指针"的学生涌入数据结构课堂。</p>
+  <p><strong>逻辑支撑</strong>：这个剧本的危险在于"可能发生"但"不知道什么时候发生"。中国教育部近年来在推动编程教育向 Python 倾斜（中学信息课已经大量引入 Python），但408作为研究生入学考试，改变教学语言的阻力巨大。</p>
+</div>
+
+<div class="card" style="margin-top:14px;">
+  <h4>剧本三：AI重构学习（最乐观也最不确定的剧本）</h4>
+  <p>随着 CodeBuddy、Copilot 等 AI 编程助手渗透到教学中，"背代码"和"手写链表"的价值会被重新定义。数据结构教学可能会从"让学生会写"转向"让学生会选、会分析、会调优"。AI 可以替代实现，但不能替代判断 —— 而判断力恰恰是数据结构课程最应该培养的核心能力。</p>
+  <p><strong>逻辑支撑</strong>：AI 编程工具已经可以正确写出链表、二叉树、哈希表的实现。如果学生可以用 AI 写出任何数据结构代码，那么数据结构的教学重点就应该从"怎么写"转向"什么场景下用什么结构、为什么"—— 而这恰好回到了Knuth 半个世纪前确立的这门课的本质：<strong>数据的组织方式，而非具体的代码实现。</strong></p>
+</div>
+
+<h3>6.5 最后的判断</h3>
+<blockquote>
+  数据结构这门课在过去五十年里经历了从"Knuth一个人的宏大计划"到"全球计算机专业的通用第一课"的制度化过程。它既是一门前沿课程（图论、哈希函数、搜索树的研究从未停止），也是一门被深度制度化的课程（教材、大纲、考试三重锁定）。<br><br>
+  它的最大矛盾在于：<strong>内容越来越工程化（LeetCode 刷题替代了手写伪代码），但评价体系仍然是纸笔化的（闭卷笔试、408选择题）。</strong>这个矛盾不解决，数据结构教学就会一直卡在"既像数学又像编程，但两边都不够好"的尴尬位置。<br><br>
+  但换个角度看，这种尴尬也是这门课的独特价值所在。它逼着学生在一个课程里同时面对两个维度的挑战：抽象的数学分析，和具体的工程实现。这种"双线作战"的能力，在计算机科学的任何其他领域都用得上。
+</blockquote>
+</section>
+
+<!-- ============ S7: Sources ============ -->
+<section id="s7">
+<h2>七、信息来源</h2>
+<ol class="sources-list">
+  <li>Donald E. Knuth, <em>The Art of Computer Programming, Vol.1: Fundamental Algorithms</em>, Addison-Wesley, 1968, 1997 (3rd ed.) <span class="source"><a href="https://www-cs-faculty.stanford.edu/~knuth/taocp.html" target="_blank">Stanford TAOCP page</a></span></li>
+  <li>Niklaus Wirth, <em>Algorithms + Data Structures = Programs</em>, Prentice-Hall, 1976 <span class="source"><a href="https://archive.org/details/algorithmsdatast0000wirt" target="_blank">Internet Archive</a></span></li>
+  <li>严蔚敏, 吴伟民, <em>数据结构（C语言版）</em>, 清华大学出版社, 1997 (第1版) / 2007 (第2版)</li>
+  <li>严蔚敏, 李冬梅 等, <em>数据结构（C语言版）第3版</em>, 人民邮电出版社, 2021</li>
+  <li>Thomas H. Cormen et al., <em>Introduction to Algorithms</em>, MIT Press, 1990 (1st ed.), 2022 (4th ed.)</li>
+  <li>Robert Sedgewick, Kevin Wayne, <em>Algorithms</em>, Addison-Wesley, 2011 (4th ed.)</li>
+  <li>程杰, <em>大话数据结构</em>, 清华大学出版社, 2011</li>
+  <li>CSDN Blog: "408真题分值分布", 发布于 2022-11-24 <span class="source"><a href="https://blog.csdn.net/qq_45519325/article/details/128027285" target="_blank">CSDN</a></span></li>
+  <li>CSDN Blog: "考前自查！考研408计算机专业考试重点", 发布于 2024-11-29 <span class="source"><a href="https://blog.csdn.net/xwsky_jiruandc/article/details/144145108" target="_blank">CSDN</a></span></li>
+  <li>中国大学MOOC: 浙江大学 陈越《数据结构》 <span class="source"><a href="https://www.icourse163.org/course/zju-93001" target="_blank">iCourse163</a></span></li>
+  <li>百度百科: "数据结构（浙江大学提供的慕课）"</li>
+  <li>掘金: "重学数据结构（序：概览）", 发布于 2020-08-02 <span class="source"><a href="https://juejin.cn/post/6856309297899536398" target="_blank">掘金</a></span></li>
+  <li>Softpanorama: TAOCP overview <span class="source"><a href="https://softpanorama.org/Bookshelf/Computers/Classics/taocp.shtml" target="_blank">Softpanorama</a></span></li>
+  <li>GitCode: "cs-408 历年真题考频统计", 发布于 2026-02-06 <span class="source"><a href="https://blog.gitcode.com/bf3347330f045f15a3536ed5481de83d.html" target="_blank">GitCode</a></span></li>
+</ol>
+<p style="margin-top:16px;font-size:13px;color:var(--txt2);">注：本报告基于上述公开信息源撰写。部分历史细节（如Knuth开始写作TAOCP的年份、Mauchly排序论文的发布时间等）来自多个独立来源的交叉验证。涉及当前教材评价的部分参考了知乎、CSDN等社区的用户讨论，但未逐条引用。所有事实性陈述均已尽可能标注第一手来源。</p>
+</section>
+
+</div>
+
+<script>
+document.addEventListener('click', function(e) {
+  var panel = document.querySelector('.toc-panel');
+  if (panel.classList.contains('open') && !panel.contains(e.target) && !e.target.classList.contains('toc-btn')) {
+    panel.classList.remove('open');
+  }
+});
+</script>
+</body>
+</html>
