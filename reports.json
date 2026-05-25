@@ -1,5 +1,11 @@
 [
   {
+    "title": "数据结构",
+    "slug": "data-struct",
+    "date": "2026-05-25",
+    "summary": "从 Knuth 1968 年奠基、Wirth 经典公式、严蔚敏教材中国化到 408 考研与 LeetCode 时代的系统性研究，追溯计算机科学第一课的演变逻辑与未来走向。"
+  },
+  {
     "title": "Agent 支付",
     "slug": "agent-pay",
     "date": "2026-05-24",
@@ -9,7 +15,7 @@
     "title": "乌龙指",
     "slug": "wulongzhi",
     "date": "2026-05-20",
-    "summary": "从 Mizuho、三星证券、Citigroup 等历史事故，到国际视角下“捡乌龙指”策略与 stink bid 方法论的系统性研究。"
+    "summary": "从 Mizuho、三星证券、Citigroup 等历史事故，到国际视角下捡乌龙指策略与 stink bid 方法论的系统性研究。"
   },
   {
     "title": "AI Agent 支付",
