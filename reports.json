@@ -1,5 +1,11 @@
 [
   {
+    "title": "离散数学",
+    "slug": "discrete-mathematics",
+    "date": "2026-05-29",
+    "summary": "从 Euler、Boole、Gödel、Turing 到图论、逻辑、组合学、自动机与现代 AI 图结构的系统性研究。"
+  },
+  {
     "title": "数据结构",
     "slug": "data-struct",
     "date": "2026-05-25",
